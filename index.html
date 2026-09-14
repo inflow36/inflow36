@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="kn" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>ನನ್ನ ಲೈಫ್ ಆಪ್</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
+    <!-- Kannada Font & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen pb-20 select-none">
+
+    <!-- Top App Header (PhonePe Style) -->
+    <header class="bg-indigo-600 dark:bg-gray-800 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-indigo-500 dark:bg-gray-700 flex items-center gap-1 justify-center font-bold text-lg border-2 border-white/20">
+                    👤
+                </div>
+                <div>
+                    <h1 class="text-base font-bold leading-tight">ನನ್ನ ಲೈಫ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್</h1>
+                    <p class="text-xs text-indigo-200 dark:text-gray-400">Personal Space</p>
+                </div>
+            </div>
+            
+            <!-- Dark Mode Switch Button -->
+            <button id="themeToggle" class="w-9 h-9 rounded-full bg-indigo-500/50 dark:bg-gray-700 flex items-center justify-center text-lg">
+                <span id="themeIcon">☀️</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto px-4 pt-4 space-y-5">
+
+        <!-- 1. Running Target Banner (Primary Card) -->
+        <div class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-xs uppercase tracking-wider text-indigo-200 font-semibold">ಇಂದಿನ ರನ್ / ವಾಕ್ ಟಾರ್ಗೆಟ್</span>
+                    <div class="text-3xl font-extrabold mt-1"><span id="runTarget">5.0</span> <span class="text-lg font-medium">KM</span></div>
+                </div>
+                <div class="bg-white/20 p-2 rounded-xl text-2xl">🏃‍♂️</div>
+            </div>
+            
+            <p id="rolloverMsg" class="text-xs text-indigo-100 mt-2">Daily Goal: 5 KM (ಬಾಕಿ ಮೊತ್ತ ಸೇರಿದೆ)</p>
+
+            <div class="mt-4 flex gap-2">
+                <input type="number" id="runInput" placeholder="ಇಂದು ನಡೆದ KM" class="w-full px-3 py-2 text-sm text-gray-900 bg-white rounded-xl focus:outline-none">
+                <button id="addRunBtn" class="bg-indigo-900 hover:bg-indigo-950 text-white text-sm px-5 py-2 rounded-xl font-bold transition">ಆಡ್</button>
+            </div>
+        </div>
+
+        <!-- 2. Quick Actions / Categories (PhonePe Grid Style) -->
+        <div>
+            <h2 class="text-xs font-bold text-gray-500 dark:text-gray-400 mb-3 uppercase tracking-wider">Quick Actions</h2>
+            <div class="grid grid-cols-4 gap-3 bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 text-center">
+                
+                <div class="flex flex-col items-center gap-1">
+                    <div class="w-12 h-12 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 rounded-2xl flex items-center justify-center text-xl shadow-xs">💳</div>
+                    <span class="text-xs font-medium">ಫೈನಾನ್ಸ್</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1">
+                    <div class="w-12 h-12 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 rounded-2xl flex items-center justify-center text-xl shadow-xs">🚨</div>
+                    <span class="text-xs font-medium">ಎಮರ್ಜೆನ್ಸಿ</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1">
+                    <div class="w-12 h-12 bg-purple-100 dark:bg-purple-900/40 text-purple-600 dark:text-purple-300 rounded-2xl flex items-center justify-center text-xl shadow-xs">✈️</div>
+                    <span class="text-xs font-medium">ಬಕೆಟ್ ಲಿಸ್ಟ್</span>
+                </div>
+
+                <div class="flex flex-col items-center gap-1">
+                    <div class="w-12 h-12 bg-amber-100 dark:bg-amber-900/40 text-amber-600 dark:text-amber-300 rounded-2xl flex items-center justify-center text-xl shadow-xs">🎂</div>
+                    <span class="text-xs font-medium">ವಿಶೇಷ ದಿನ</span>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- 3. Habit Tracker -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <h2 class="text-sm font-bold mb-3 flex items-center justify-between">
+                <span>✅ ಹ್ಯಾಬಿಟ್ ಟ್ರ್ಯಾಕರ್</span>
+                <span class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">Today</span>
+            </h2>
+            <div class="space-y-2">
+                <label class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" class="w-5 h-5 accent-indigo-600 rounded-md">
+                        <span class="text-sm font-medium">🇮🇳 ಹಿಂದಿ ಕಲಿಕೆ (30 min)</span>
+                    </div>
+                    <span class="text-xs text-gray-400">🔥 3 days</span>
+                </label>
+                <label class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl cursor-pointer">
+                    <div class="flex items-center gap-3">
+                        <input type="checkbox" class="w-5 h-5 accent-indigo-600 rounded-md">
+                        <span class="text-sm font-medium">💧 3 ಲೀಟರ್ ನೀರು ಕುಡಿಯುವುದು</span>
+                    </div>
+                    <span class="text-xs text-gray-400">🔥 5 days</span>
+                </label>
+            </div>
+        </div>
+
+        <!-- 4. Quick Notes Section -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
+            <h2 class="text-sm font-bold mb-2">📝 ತ್ವರಿತ ನೋಟ್ಸ್ (Notes)</h2>
+            <textarea id="noteInput" rows="2" placeholder="ಮುಖ್ಯ ವಿಷಯಗಳನ್ನು ಬರೆದಿಡಿ..." class="w-full p-3 text-sm bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+            <button class="mt-2 w-full bg-gray-900 dark:bg-gray-700 hover:bg-black text-white text-xs py-2.5 rounded-xl font-bold transition">ಸೇವ್ ನೋಟ್</button>
+        </div>
+
+    </main>
+
+    <!-- PhonePe Style App Navigation Bar at Bottom -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-50">
+        <div class="max-w-md mx-auto flex justify-around py-2">
+            <button class="flex flex-col items-center gap-1 text-indigo-600 dark:text-indigo-400">
+                <span class="text-lg">🏠</span>
+                <span class="text-[10px] font-bold">ಹೋಮ್</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <span class="text-lg">💰</span>
+                <span class="text-[10px] font-medium">ಫೈನಾನ್ಸ್</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <span class="text-lg">📖</span>
+                <span class="text-[10px] font-medium">ಡೈರಿ</span>
+            </button>
+            <button class="flex flex-col items-center gap-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                <span class="text-lg">⚙️</span>
+                <span class="text-[10px] font-medium">ಸೆಟ್ಟಿಂಗ್ಸ್</span>
+            </button>
+        </div>
+    </nav>
+
+    <script src="script.js"></script>
+</body>
+</html>
