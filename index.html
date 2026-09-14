@@ -30,7 +30,6 @@
                 </div>
             </div>
             
-            <!-- Dark Mode Switch -->
             <button id="themeToggle" class="w-9 h-9 rounded-full bg-indigo-500/50 dark:bg-gray-700 flex items-center justify-center text-lg">
                 <span id="themeIcon">☀️</span>
             </button>
@@ -98,23 +97,15 @@
             <button id="saveFinanceBtn" class="w-full bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-xs py-2 rounded-xl font-bold transition">ಫೈನಾನ್ಸ್ ಸೇವ್ ಮಾಡಿ</button>
         </div>
 
-        <!-- 4. Emergency & Monthly Planner Cards -->
+        <!-- 4. Dynamic Emergency & Monthly Planner -->
         <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
-            <h2 class="text-sm font-bold">🚨 ಎಮರ್ಜೆನ್ಸಿ & ಮಂತ್ಲಿ ಫಂಡ್ಸ್</h2>
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-bold">🚨 ಎಮರ್ಜೆನ್ಸಿ & ಮಂತ್ಲಿ ಫಂಡ್ಸ್</h2>
+                <button id="addCardBtn" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl font-bold transition">+ ಹೊಸ ಕಾರ್ಡ್</button>
+            </div>
             
-            <div class="border border-indigo-100 dark:border-gray-700 rounded-xl p-3 bg-indigo-50/50 dark:bg-gray-700/30 space-y-2">
-                <div class="flex justify-between items-center border-b border-indigo-100 dark:border-gray-600 pb-2">
-                    <span class="text-xs font-bold text-indigo-700 dark:text-indigo-300">ಜುಲೈ ಎಮರ್ಜೆನ್ಸಿ ಫಂಡ್</span>
-                    <span class="text-xs font-extrabold text-gray-800 dark:text-gray-200">Total: ₹ 25,000</span>
-                </div>
-                <div class="flex justify-between text-xs text-gray-600 dark:text-gray-300">
-                    <span>15th Kuri</span>
-                    <span>₹ 20,000</span>
-                </div>
-                <div class="flex justify-between text-xs text-gray-600 dark:text-gray-300">
-                    <span>Sango</span>
-                    <span>₹ 5,000</span>
-                </div>
+            <div id="emergencyCardsContainer" class="space-y-3">
+                <!-- Dynamic Emergency Cards will appear here -->
             </div>
         </div>
 
@@ -137,11 +128,37 @@
             <button id="saveNoteBtn" class="mt-2 w-full bg-gray-900 dark:bg-gray-700 hover:bg-black text-white text-xs py-2 rounded-xl font-bold transition">ಸೇವ್ ನೋಟ್</button>
         </div>
 
-        <!-- 7. Personal Diary -->
+        <!-- 7. PIN Protected Personal Diary -->
         <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-            <h2 class="text-sm font-bold mb-2">📖 ನನ್ನ ಖಾಸಗಿ ಡೈರಿ</h2>
-            <textarea id="diaryInput" rows="3" placeholder="ಇಂದಿನ ಅನಿಸಿಕೆಗಳನ್ನು ಬರೆಯಿರಿ..." class="w-full p-3 text-sm bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
-            <button id="saveDiaryBtn" class="mt-2 w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-xl font-bold transition">ಡೈರಿ ಎಂಟ್ರಿ ಸೇವ್ ಮಾಡಿ</button>
+            <div class="flex justify-between items-center mb-2">
+                <h2 class="text-sm font-bold">🔒 ಖಾಸಗಿ ಡೈರಿ</h2>
+                <button id="lockDiaryBtn" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hidden">ಲಾಕ್ ಮಾಡಿ</button>
+            </div>
+
+            <!-- PIN Unlock View -->
+            <div id="diaryPinView" class="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-xl text-center space-y-3">
+                <p class="text-xs font-medium text-gray-600 dark:text-gray-300">ಡೈರಿ ತೆರೆಯಲು PIN ಹಾಕಿ</p>
+                <input type="password" id="diaryPinInput" placeholder="PIN ಕೋಡ್" class="w-full p-2 text-center text-sm bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none">
+                <button id="unlockDiaryBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-xl font-bold transition">ಅನ್‌ಲಾಕ್ ಮಾಡಿ</button>
+            </div>
+
+            <!-- Diary Content View (Hidden by default) -->
+            <div id="diaryContentView" class="hidden space-y-2">
+                <textarea id="diaryInput" rows="3" placeholder="ಇಂದಿನ ಅನಿಸಿಕೆಗಳನ್ನು ಬರೆಯಿರಿ..." class="w-full p-3 text-sm bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                <button id="saveDiaryBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2 rounded-xl font-bold transition">ಡೈರಿ ಎಂಟ್ರಿ ಸೇವ್ ಮಾಡಿ</button>
+            </div>
+        </div>
+
+        <!-- 8. Data Backup & Restore -->
+        <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
+            <h2 class="text-sm font-bold">💾 ಡೇಟಾ ಬ್ಯಾಕಪ್ & ರಿಸ್ಟೋರ್</h2>
+            <div class="grid grid-cols-2 gap-2">
+                <button id="exportDataBtn" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 text-xs py-2 rounded-xl font-bold transition">ಬ್ಯಾಕಪ್ ಡೌನ್‌ಲೋಡ್</button>
+                <label class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-xs py-2 rounded-xl font-bold transition text-center cursor-pointer flex items-center justify-center">
+                    <span>ಫೈಲ್ ರಿಸ್ಟೋರ್</span>
+                    <input type="file" id="importDataInput" class="hidden" accept=".json">
+                </label>
+            </div>
         </div>
 
     </main>
