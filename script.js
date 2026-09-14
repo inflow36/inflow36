@@ -1,6 +1,4 @@
-// ==========================================
-// 1. Dark / Light Theme Toggle
-// ==========================================
+// 1. Dark/Light Theme Logic
 const themeToggleBtn = document.getElementById('themeToggle');
 const themeIcon = document.getElementById('themeIcon');
 
@@ -21,56 +19,59 @@ if (localStorage.getItem('theme') === 'light') {
     themeIcon.textContent = '🌙';
 }
 
-// ==========================================
-// 2. Smart Rollover Run Logic (5 KM Daily)
-// ==========================================
+// 2. Rollover Run Tracker (5 KM Daily Target)
 const DAILY_TARGET = 5.0;
 
 function calculateTodayTarget() {
     let pendingKm = parseFloat(localStorage.getItem('pending_run_km')) || 0;
     let todayTarget = DAILY_TARGET + pendingKm;
-    
-    const runTargetElem = document.getElementById('runTarget');
-    if (runTargetElem) {
-        runTargetElem.textContent = todayTarget.toFixed(1);
-    }
+    document.getElementById('runTarget').textContent = todayTarget.toFixed(1);
 }
 
-const addRunBtn = document.getElementById('addRunBtn');
-if (addRunBtn) {
-    addRunBtn.addEventListener('click', () => {
-        const inputField = document.getElementById('runInput');
-        const completedKm = parseFloat(inputField.value) || 0;
-        
-        let currentTarget = parseFloat(document.getElementById('runTarget').textContent);
-        let remainingKm = currentTarget - completedKm;
+document.getElementById('addRunBtn').addEventListener('click', () => {
+    const inputField = document.getElementById('runInput');
+    const completedKm = parseFloat(inputField.value) || 0;
+    let currentTarget = parseFloat(document.getElementById('runTarget').textContent);
+    let remainingKm = currentTarget - completedKm;
 
-        if (remainingKm < 0) remainingKm = 0; // Target complete
+    if (remainingKm < 0) remainingKm = 0;
 
-        localStorage.setItem('pending_run_km', remainingKm.toFixed(1));
-        inputField.value = '';
-        calculateTodayTarget();
-        alert(`ಇಂದು ನೀವು ${completedKm} KM ಎಂಟ್ರಿ ಮಾಡಿದ್ದೀರಿ!`);
-    });
-}
+    localStorage.setItem('pending_run_km', remainingKm.toFixed(1));
+    inputField.value = '';
+    calculateTodayTarget();
+    alert(`ಇಂದು ನೀವು ${completedKm} KM ನಮೂದಿಸಿದ್ದೀರಿ!`);
+});
 
-// ==========================================
-// 3. Quick Notes Auto-Save
-// ==========================================
+// 3. Finance Inputs Load & Save
+const payableInput = document.getElementById('payableInput');
+const receivableInput = document.getElementById('receivableInput');
+
+payableInput.value = localStorage.getItem('fin_payable') || '';
+receivableInput.value = localStorage.getItem('fin_receivable') || '';
+
+document.getElementById('saveFinanceBtn').addEventListener('click', () => {
+    localStorage.setItem('fin_payable', payableInput.value);
+    localStorage.setItem('fin_receivable', receivableInput.value);
+    alert('ಫೈನಾನ್ಸ್ ಡೇಟಾ ಸೇವ್ ಆಗಿದೆ!');
+});
+
+// 4. Quick Notes Load & Save
 const noteInput = document.getElementById('noteInput');
-if (noteInput) {
-    // Load existing note
-    noteInput.value = localStorage.getItem('user_quick_note') || '';
+noteInput.value = localStorage.getItem('user_quick_note') || '';
 
-    // Save note function
-    const saveNoteBtn = noteInput.nextElementSibling;
-    if (saveNoteBtn) {
-        saveNoteBtn.addEventListener('click', () => {
-            localStorage.setItem('user_quick_note', noteInput.value);
-            alert('ನೋಟ್ಸ್ ಯಶಸ್ವಿಯಾಗಿ ಸೇವ್ ಆಗಿದೆ!');
-        });
-    }
-}
+document.getElementById('saveNoteBtn').addEventListener('click', () => {
+    localStorage.setItem('user_quick_note', noteInput.value);
+    alert('ನೋಟ್ಸ್ ಸೇವ್ ಆಗಿದೆ!');
+});
 
-// App Initialization
+// 5. Diary Load & Save
+const diaryInput = document.getElementById('diaryInput');
+diaryInput.value = localStorage.getItem('user_diary_entry') || '';
+
+document.getElementById('saveDiaryBtn').addEventListener('click', () => {
+    localStorage.setItem('user_diary_entry', diaryInput.value);
+    alert('ಡೈರಿ ಎಂಟ್ರಿ ಸೇವ್ ಆಗಿದೆ!');
+});
+
+// Initialize Run Target
 calculateTodayTarget();
