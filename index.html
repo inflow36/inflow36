@@ -1,237 +1,52 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="kn">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ನನ್ನ ಲೈಫ್ ಆಪ್</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { darkMode: 'class' }
-    </script>
-    <!-- Kannada Font -->
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#5f259f"><title>ನನ್ನ ಲೈಫ್</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
 </head>
-<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen pb-24 select-none">
-
-    <!-- Header -->
-    <header class="bg-indigo-600 dark:bg-gray-800 text-white sticky top-0 z-40 shadow-md">
-        <div class="max-w-md mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 rounded-full bg-indigo-500 dark:bg-gray-700 flex items-center justify-center font-bold text-lg border-2 border-white/20">👤</div>
-                <div>
-                    <h1 class="text-base font-bold leading-tight">ನನ್ನ ಲೈಫ್ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್</h1>
-                    <p class="text-xs text-indigo-200 dark:text-gray-400">Personal Space</p>
-                </div>
-            </div>
-            <button id="themeToggle" class="w-9 h-9 rounded-full bg-indigo-500/50 dark:bg-gray-700 flex items-center justify-center text-lg">
-                <span id="themeIcon">🌙</span>
-            </button>
-        </div>
-    </header>
-
-    <!-- App Views -->
-    <main class="max-w-md mx-auto px-4 pt-4">
-
-        <!-- 🏠 HOME VIEW -->
-        <section id="viewHome" class="space-y-5">
-            <!-- 1. Run / Walk Tracker -->
-            <div class="bg-gradient-to-r from-indigo-600 to-blue-600 text-white p-5 rounded-2xl shadow-lg relative overflow-hidden">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <span class="text-xs uppercase tracking-wider text-indigo-200 font-semibold">ಇನ್ನೂ ಬಾಕಿ ಇರುವ ಟಾರ್ಗೆಟ್</span>
-                        <div class="text-3xl font-extrabold mt-1"><span id="runRemaining">5.0</span> <span class="text-lg font-medium">KM</span></div>
-                        <p class="text-xs text-indigo-100 mt-1">ಇಂದು ನಡೆದಿದ್ದು: <span id="completedKmDisplay" class="font-bold">0.0</span> / <span id="totalTargetDisplay">5.0</span> KM</p>
-                    </div>
-                    <div class="flex flex-col items-end gap-2">
-                        <div class="bg-white/20 p-2 rounded-xl text-2xl">🏃‍♂️</div>
-                        <button id="editRunBtn" class="text-[11px] bg-white/20 hover:bg-white/30 text-white px-2.5 py-1 rounded-lg font-medium transition">✏️ Edit</button>
-                    </div>
-                </div>
-
-                <div class="mt-4 flex gap-2">
-                    <input type="number" step="0.1" id="runInput" placeholder="ಇಂದು ನಡೆದ KM" class="w-full px-3 py-2 text-sm text-gray-900 bg-white rounded-xl focus:outline-none">
-                    <button id="addRunBtn" class="bg-indigo-900 hover:bg-indigo-950 text-white text-sm px-5 py-2 rounded-xl font-bold transition">ಆಡ್</button>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-white/20 grid grid-cols-3 gap-2 text-center text-xs">
-                    <div class="bg-white/10 p-2 rounded-xl">
-                        <p class="text-[10px] text-indigo-200">ನಿನ್ನೆ</p>
-                        <p id="yesterdayRun" class="font-bold">0.0 KM</p>
-                    </div>
-                    <div class="bg-white/10 p-2 rounded-xl">
-                        <p class="text-[10px] text-indigo-200">7 ದಿನಗಳ Avg</p>
-                        <p id="weeklyAvgRun" class="font-bold">0.0 KM</p>
-                    </div>
-                    <div class="bg-white/10 p-2 rounded-xl">
-                        <p class="text-[10px] text-indigo-200">30 ದಿನಗಳ Avg</p>
-                        <p id="monthlyAvgRun" class="font-bold">0.0 KM</p>
-                    </div>
-                </div>
-
-                <button id="openRunHistoryBtn" class="mt-3 w-full bg-white/20 hover:bg-white/30 text-white text-xs py-2 rounded-xl font-bold transition">📊 ಸಂಪೂರ್ಣ ಹಿಸ್ಟರಿ (History)</button>
-            </div>
-
-            <!-- 2. Habit Tracker (Persistent) -->
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-                <h2 class="text-sm font-bold mb-3 flex items-center justify-between">
-                    <span>✅ ಹ್ಯಾಬಿಟ್ ಟ್ರ್ಯಾಕರ್</span>
-                    <span class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold">Today</span>
-                </h2>
-                <div class="space-y-2">
-                    <label class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl cursor-pointer">
-                        <span class="text-sm font-medium">🇮🇳 ಹಿಂದಿ ಕಲಿಕೆ (30 min)</span>
-                        <input type="checkbox" id="habitHindi" class="habit-check w-5 h-5 accent-indigo-600 rounded-md">
-                    </label>
-                    <label class="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-xl cursor-pointer">
-                        <span class="text-sm font-medium">💧 3 ಲೀಟರ್ ನೀರು ಕುಡಿಯುವುದು</span>
-                        <input type="checkbox" id="habitWater" class="habit-check w-5 h-5 accent-indigo-600 rounded-md">
-                    </label>
-                </div>
-            </div>
-
-            <!-- 3. Dynamic Emergency Cards Planner -->
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-sm font-bold">🚨 ಎಮರ್ಜೆನ್ಸಿ & ಮಂತ್ಲಿ ಫಂಡ್ಸ್</h2>
-                    <button id="addCardBtn" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl font-bold transition">+ ಹೊಸ ಕಾರ್ಡ್</button>
-                </div>
-                <div id="emergencyCardsContainer" class="space-y-3"></div>
-            </div>
-
-            <!-- 4. Dynamic Bucket List -->
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
-                <div class="flex justify-between items-center">
-                    <h2 class="text-sm font-bold">✈️ ಬಕೆಟ್ ಲಿಸ್ಟ್ & ಪ್ರವಾಸ</h2>
-                    <button id="addBucketBtn" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1.5 rounded-xl font-bold transition">+ ಸೇರಿಸಿ</button>
-                </div>
-                <div id="bucketContainer" class="space-y-2"></div>
-            </div>
-
-            <!-- 5. Quick Notes with History -->
-<div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
-    <h2 class="text-sm font-bold">📝 ತ್ವರಿತ ನೋಟ್ಸ್ (Notes)</h2>
-    <textarea id="noteInput" rows="2" placeholder="ಮುಖ್ಯ ವಿಷಯಗಳನ್ನು ಬರೆದಿಡಿ..." class="w-full p-3 text-sm bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none"></textarea>
-    <button id="saveNoteBtn" class="w-full bg-gray-900 dark:bg-gray-700 hover:bg-black text-white text-xs py-2 rounded-xl font-bold transition">ಸೇವ್ ನೋಟ್</button>
-    <div id="notesListContainer" class="space-y-2 pt-2 border-t border-gray-100 dark:border-gray-700 max-h-40 overflow-y-auto"></div>
+<body>
+<div class="app-shell">
+<header class="topbar"><div><div class="eyebrow">PERSONAL SPACE</div><h1 id="greeting">ನಮಸ್ಕಾರ 👋</h1></div><button class="icon-btn" id="themeToggle" aria-label="Theme">☾</button></header>
+<main id="appMain">
+<section class="view active" id="view-home">
+<div class="hero-card"><div><span>ಇಂದಿನ ಪ್ರಗತಿ</span><strong id="homeProgress">0%</strong><small id="homeProgressText">ನಿಮ್ಮ ಗುರಿಗಳನ್ನು ಮುಂದುವರಿಸಿ</small></div><div class="ring" id="homeRing"><div><b id="homeKm">0.0</b><small>KM</small></div></div></div>
+<div class="section-head"><h2>ಹಣದ ಸ್ಥಿತಿ</h2><button class="text-btn" data-nav="money">ಎಲ್ಲವೂ →</button></div>
+<div class="money-grid"><button class="money-card"><span>ಪಾವತಿಸಬೇಕಾದದ್ದು</span><b id="homePayable">₹0</b></button><button class="money-card"><span>ಪಡೆಯಬೇಕಾದದ್ದು</span><b id="homeReceivable">₹0</b></button></div>
+<div class="section-head"><h2>Quick Actions</h2></div><div class="quick-grid">
+<button data-sheet="runSheet">🏃<span>Run / Walk</span></button><button data-sheet="paymentSheet">💳<span>Payment</span></button><button data-sheet="habitSheet">✓<span>Habit</span></button><button data-sheet="noteSheet">📝<span>Note</span></button>
 </div>
-
-            <!-- 6. Backup & Restore -->
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-3">
-                <h2 class="text-sm font-bold">💾 ಡೇಟಾ ಬ್ಯಾಕಪ್ & ರಿಸ್ಟೋರ್</h2>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="exportDataBtn" class="bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 hover:bg-indigo-100 text-xs py-2 rounded-xl font-bold transition">ಬ್ಯಾಕಪ್ ಡೌನ್‌ಲೋಡ್</button>
-                    <label class="bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 text-xs py-2 rounded-xl font-bold transition text-center cursor-pointer flex items-center justify-center">
-                        <span>ಫೈಲ್ ರಿಸ್ಟೋರ್</span>
-                        <input type="file" id="importDataInput" class="hidden" accept=".json">
-                    </label>
-                </div>
-            </div>
-        </section>
-
-        <!-- 💰 FINANCE VIEW -->
-        <section id="viewFinance" class="hidden space-y-5">
-            <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 space-y-4">
-                <h2 class="text-base font-bold">💰 ಫೈನಾನ್ಸ್ ಮ್ಯಾನೇಜರ್</h2>
-                <div class="grid grid-cols-2 gap-3">
-                    <div class="bg-red-50 dark:bg-red-900/20 p-3 rounded-xl border border-red-100 dark:border-red-800/30">
-                        <p class="text-xs text-red-600 dark:text-red-400 font-medium">ನೀಡಲು ಇರುವುದು</p>
-                        <input type="number" id="payableInput" placeholder="₹ 0" class="w-full mt-1 p-1 text-base bg-transparent font-bold border-b border-red-300 dark:border-red-700 focus:outline-none">
-                    </div>
-                    <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-xl border border-green-100 dark:border-green-800/30">
-                        <p class="text-xs text-green-600 dark:text-green-400 font-medium">ಬರಲು ಇರುವುದು</p>
-                        <input type="number" id="receivableInput" placeholder="₹ 0" class="w-full mt-1 p-1 text-base bg-transparent font-bold border-b border-green-300 dark:border-green-700 focus:outline-none">
-                    </div>
-                </div>
-                <button id="saveFinanceBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2.5 rounded-xl font-bold transition">ಫೈನಾನ್ಸ್ ಸೇವ್ ಮಾಡಿ</button>
-            </div>
-        </section>
-
-     <!-- 📖 DIARY VIEW -->
-<section id="viewDiary" class="hidden space-y-5">
-    <div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
-        <div class="flex justify-between items-center mb-3">
-            <h2 class="text-base font-bold">🔒 ಖಾಸಗಿ ಡೈರಿ</h2>
-            <button id="lockDiaryBtn" class="text-xs text-indigo-600 dark:text-indigo-400 font-semibold hidden">ಲಾಕ್ ಮಾಡಿ</button>
-        </div>
-
-        <div id="diaryPinView" class="p-5 bg-gray-50 dark:bg-gray-700/50 rounded-xl text-center space-y-3">
-            <p class="text-xs font-medium text-gray-600 dark:text-gray-300">ಡೈರಿ ತೆರೆಯಲು PIN ಹಾಕಿ</p>
-            <input type="password" id="diaryPinInput" placeholder="PIN ಕೋಡ್" class="w-full p-2 text-center text-base bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none">
-            <button id="unlockDiaryBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2.5 rounded-xl font-bold transition">ಅನ್‌ಲಾಕ್ ಮಾಡಿ</button>
-        </div>
-
-        <div id="diaryContentView" class="hidden space-y-3">
-            <textarea id="diaryInput" rows="3" placeholder="ಇಂದಿನ ಅನಿಸಿಕೆಗಳನ್ನು ಬರೆಯಿರಿ..." class="w-full p-3 text-sm bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 focus:outline-none"></textarea>
-            <button id="saveDiaryBtn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs py-2.5 rounded-xl font-bold transition">ಡೈರಿ ಎಂಟ್ರಿ ಸೇವ್ ಮಾಡಿ</button>
-            <div id="diaryEntriesContainer" class="space-y-2 pt-3 border-t border-gray-100 dark:border-gray-700 max-h-60 overflow-y-auto"></div>
-        </div>
-    </div>
+<div class="section-head"><h2>ಇಂದಿನ Habits</h2><button class="text-btn" data-nav="activity">ಎಲ್ಲಾ →</button></div><div id="homeHabits" class="list-card"></div>
+<div class="section-head"><h2>ಮುಂದಿನ ಪಾವತಿಗಳು</h2><button class="text-btn" data-nav="more">ನೋಡಿ →</button></div><div id="homePayments" class="list-card"></div>
 </section>
-
-    <!-- Run History Modal -->
-    <div id="runHistoryModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-2xl p-4 space-y-3 shadow-2xl max-h-[80vh] flex flex-col">
-            <div class="flex justify-between items-center border-b border-gray-100 dark:border-gray-700 pb-2">
-                <h3 class="text-sm font-bold">🏃‍♂️ ವಾಕಿಂಗ್ / ರನ್ನಿಂಗ್ ಹಿಸ್ಟರಿ</h3>
-                <button id="closeRunHistoryBtn" class="text-sm font-bold text-gray-500">✕</button>
-            </div>
-            <div id="runHistoryList" class="flex-1 overflow-y-auto space-y-2 text-xs"></div>
-        </div>
-    </div>
-
-    <!-- Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 bg-white dark:bg-gray-800 border-t border-gray-200 dark:border-gray-700 z-40">
-        <div class="max-w-md mx-auto flex justify-around py-2">
-            <button id="navHome" class="nav-btn flex flex-col items-center gap-1 text-indigo-600 dark:text-indigo-400">
-                <span class="text-lg">🏠</span>
-                <span class="text-[10px] font-bold">ಹೋಮ್</span>
-            </button>
-            <button id="navFinance" class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200">
-                <span class="text-lg">💰</span>
-                <span class="text-[10px] font-medium">ಫೈನಾನ್ಸ್</span>
-            </button>
-            <button id="navDiary" class="nav-btn flex flex-col items-center gap-1 text-gray-400 hover:text-gray-200">
-                <span class="text-lg">📖</span>
-                <span class="text-[10px] font-medium">ಡೈರಿ</span>
-            </button>
-        </div>
-    </nav>
-
-    <script src="script.js"></script>
-</body>
-</html>
-<!-- 1. Home View ನಲ್ಲೊಂದು Habit Tracker Open ಮಾಡುವ Button -->
-<div class="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 flex justify-between items-center">
-    <div>
-        <h2 class="text-sm font-bold">⚡ My Habits Tracker</h2>
-        <p class="text-xs text-gray-400">ದೈನಂದಿನ ಹ್ಯಾಬಿಟ್‌ಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ</p>
-    </div>
-    <button id="openHabitModalBtn" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs px-4 py-2 rounded-xl font-bold transition">
-        Open Habits
-    </button>
+<section class="view" id="view-money"><div class="page-title"><div><span>Money</span><h2>ನಿಮ್ಮ ಹಣದ ಟ್ರ್ಯಾಕರ್</h2></div><button class="round-add" data-sheet="transactionSheet">＋</button></div>
+<div class="balance-card"><small>Net Balance</small><strong id="netBalance">₹0</strong><div><span>Receivable <b id="moneyReceivable">₹0</b></span><span>Payable <b id="moneyPayable">₹0</b></span></div></div>
+<div class="section-head"><h2>Transactions</h2></div><div id="transactionsList" class="stack"></div>
+<div class="legacy-card"><h3>Monthly snapshot</h3><label>Payable <input id="payableInput" inputmode="decimal" placeholder="₹ 0"></label><label>Receivable <input id="receivableInput" inputmode="decimal" placeholder="₹ 0"></label><button class="primary-btn" id="saveFinance">Save snapshot</button></div>
+</section>
+<section class="view" id="view-activity"><div class="page-title"><div><span>Activity</span><h2>ನಿಮ್ಮ ದಿನಚರಿ & ಗುರಿಗಳು</h2></div></div>
+<div class="activity-card"><div><small>Today’s walk/run</small><strong><span id="activityKm">0.0</span> / 5 KM</strong></div><div class="bar"><i id="activityBar"></i></div><button class="secondary-btn" data-sheet="runSheet">+ KM ಸೇರಿಸಿ</button></div>
+<div class="section-head"><h2>Habits</h2><button class="round-add small" data-sheet="habitSheet">＋</button></div><div id="allHabits" class="stack"></div>
+<div class="section-head"><h2>Goals</h2><button class="round-add small" data-sheet="goalSheet">＋</button></div><div id="goalsList" class="stack"></div>
+<div class="section-head"><h2>Run history</h2></div><div id="runHistoryList" class="stack"></div>
+</section>
+<section class="view" id="view-diary"><div class="page-title"><div><span>Private</span><h2>ನನ್ನ Diary 🔒</h2></div></div><div id="diaryLocked" class="lock-card"><div class="lock-icon">🔐</div><h3>Private diary</h3><p>ನಿಮ್ಮ notes ಈ device‌ನಲ್ಲೇ ಇರುತ್ತವೆ.</p><button class="primary-btn" data-action="unlockDiary">Unlock Diary</button></div><div id="diaryOpen" hidden><textarea id="diaryText" class="diary-input" placeholder="ಇಂದು ಹೇಗಿತ್ತು? ನಿಮ್ಮ thoughts ಇಲ್ಲಿ ಬರೆಯಿರಿ..."></textarea><button class="primary-btn" id="saveDiary">Save Entry</button><div class="section-head"><h2>Previous entries</h2></div><div id="diaryHistory" class="stack"></div><button class="danger-btn" data-action="lockDiary">Lock Diary</button></div></section>
+<section class="view" id="view-more"><div class="page-title"><div><span>More</span><h2>Settings & Tools</h2></div></div><div class="menu-card"><button data-nav="activity">🏃 Activity & Goals <span>›</span></button><button data-sheet="noteSheet">📝 Quick Notes <span>›</span></button><button data-action="showNotes">📚 Notes History <span>›</span></button><button data-action="exportData">⬇️ Backup Data <span>›</span></button><button data-action="importData">⬆️ Restore Data <span>›</span></button><button data-action="showAbout">ℹ️ About <span>›</span></button></div><div class="tip-card">💡 <b>Offline-first</b><br>ಈ app ನಿಮ್ಮ browser local storage ಬಳಸುತ್ತದೆ. Cloud sync ಇಲ್ಲ.</div></section>
+</main>
+<nav class="bottom-nav"><button class="nav-item active" data-nav="home">⌂<span>Home</span></button><button class="nav-item" data-nav="money">₹<span>Money</span></button><button class="nav-item" data-nav="activity">◉<span>Activity</span></button><button class="nav-item" data-nav="diary">▣<span>Diary</span></button><button class="nav-item" data-nav="more">☰<span>More</span></button></nav>
 </div>
-
-<!-- 2. HABITS MODAL (Full Screen / Popup View like Image) -->
-<div id="habitModal" class="fixed inset-0 bg-black/50 z-50 flex justify-center items-end sm:items-center hidden">
-    <div class="bg-gray-50 dark:bg-gray-900 w-full max-w-md h-[90vh] sm:h-[80vh] rounded-t-3xl sm:rounded-2xl flex flex-col overflow-hidden shadow-2xl">
-        
-        <!-- Header -->
-        <div class="bg-white dark:bg-gray-800 px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
-            <button id="closeHabitModalBtn" class="text-xs font-bold text-gray-500 hover:text-gray-800 dark:hover:text-gray-200">
-                ✕ ಮುಚ್ಚು
-            </button>
-            <h1 class="text-base font-bold text-gray-800 dark:text-gray-100">My Habits</h1>
-            <button id="addNewHabitBtn" class="text-xs font-bold bg-indigo-600 text-white px-3 py-1.5 rounded-lg hover:bg-indigo-700">
-                + Add
-            </button>
-        </div>
-
-        <!-- Habits List Container -->
-        <div id="habitsContainer" class="p-4 space-y-3 overflow-y-auto flex-1">
-            <!-- Dynamic Habits will render here -->
-        </div>
-
-    </div>
-</div>
+<div id="backdrop" class="backdrop"></div>
+<div id="toast" class="toast"></div>
+<div class="sheet" id="runSheet"><div class="sheet-handle"></div><h3>Add Run / Walk</h3><input id="runInput" inputmode="decimal" type="number" step="0.1" min="0" placeholder="KM ಎಷ್ಟು?"><button class="primary-btn" data-action="saveRun">Add KM</button></div>
+<div class="sheet" id="habitSheet"><div class="sheet-handle"></div><h3 id="habitSheetTitle">Add Habit</h3><input id="habitName" placeholder="ಉದಾ: Read 20 minutes"><input id="habitEmoji" placeholder="Emoji (optional)"><button class="primary-btn" data-action="saveHabit">Save Habit</button></div>
+<div class="sheet" id="paymentSheet"><div class="sheet-handle"></div><h3>Add Payment</h3><input id="paymentTitle" placeholder="ಯಾರಿಗೆ / ಯಾವುದಕ್ಕಾಗಿ?"><input id="paymentAmount" inputmode="decimal" placeholder="Amount"><select id="paymentType"><option value="payable">ನಾನು ಪಾವತಿಸಬೇಕು</option><option value="receivable">ನಾನು ಪಡೆಯಬೇಕು</option></select><input id="paymentDate" type="date"><button class="primary-btn" data-action="savePayment">Save Payment</button></div>
+<div class="sheet" id="transactionSheet"><div class="sheet-handle"></div><h3>Add Transaction</h3><input id="txTitle" placeholder="Description"><input id="txAmount" inputmode="decimal" placeholder="Amount"><select id="txType"><option value="income">Income</option><option value="expense">Expense</option></select><button class="primary-btn" data-action="saveTransaction">Add</button></div>
+<div class="sheet" id="goalSheet"><div class="sheet-handle"></div><h3>Add Goal</h3><input id="goalTitle" placeholder="Goal name"><input id="goalBudget" inputmode="decimal" placeholder="Target amount"><button class="primary-btn" data-action="saveGoal">Save Goal</button></div>
+<div class="sheet" id="noteSheet"><div class="sheet-handle"></div><h3>Quick Note</h3><textarea id="noteText" placeholder="ಒಂದು quick note..."></textarea><button class="primary-btn" data-action="saveNote">Save Note</button></div>
+<div class="modal" id="pinModal"><div class="modal-box"><h3 id="pinTitle">Diary PIN</h3><p id="pinHint">4+ digit PIN set ಮಾಡಿ.</p><input id="pinInput" type="password" inputmode="numeric" placeholder="PIN"><button class="primary-btn" data-action="submitPin">Continue</button><button class="ghost-btn" data-action="closeModal">Cancel</button></div></div>
+<div class="modal" id="aboutModal"><div class="modal-box"><h3>ನನ್ನ ಲೈಫ್</h3><p>PhonePe-inspired personal dashboard. Data ಈ device/browser ನಲ್ಲಿ local ಆಗಿ save ಆಗುತ್ತದೆ.</p><button class="primary-btn" data-action="closeModal">Close</button></div></div>
+<input id="restoreInput" type="file" accept="application/json" hidden>
+<script src="script.js"></script>
+</body></html>
