@@ -181,18 +181,174 @@ document.getElementById('openRunHistoryBtn').addEventListener('click', () => {
 document.getElementById('closeRunHistoryBtn').addEventListener('click', () => runHistoryModal.classList.add('hidden'));
 
 // ==========================================
-// 5. Habit Tracker Persistence
+// Dynamic Habit Tracker (Modal & Status Cycle)
 // ==========================================
-const habitsKey = `habits_${todayStr}`;
-let savedHabits = JSON.parse(localStorage.getItem(habitsKey)) || {};
+let habitsList = JSON.parse(localStorage.getItem('habits_db')) || [
+    { id: 1, name: 'nellikai 🍈', history: {} },
+    { id: 2, name: 'Egg 🥚', history: {} },
+    { id: 3, name: 'Drink Can full water 💧', history: {} },
+    { id: 4, name: 'Eat before 8 🥗', history: {} },
+    { id: 5, name: 'Walk 30 minutes 🚶‍♂️', history: {} }
+];
 
-document.querySelectorAll('.habit-check').forEach(checkbox => {
-    checkbox.checked = !!savedHabits[checkbox.id];
-    checkbox.addEventListener('change', (e) => {
-        savedHabits[e.target.id] = e.target.checked;
-        localStorage.setItem(habitsKey, JSON.stringify(savedHabits));
+const habitModal = document.getElementById('habitModal');
+const openHabitModalBtn = document.getElementById('openHabitModalBtn');
+const closeHabitModalBtn = document.getElementById('closeHabitModalBtn');
+
+if (openHabitModalBtn) {
+    openHabitModalBtn.addEventListener('click', () => {
+        habitModal.classList.remove('hidden');
+        renderHabits();
     });
+}
+
+if (closeHabitModalBtn) {
+    closeHabitModalBtn.addEventListener('click', () => habitModal.classList.add('hidden'));
+}
+
+// ಕಳೆದ 7 ದಿನಗಳ ದಿನಾಂಕ ಪಡೆಯುವ ಫಂಕ್ಷನ್
+function getLast7Days() {
+    let days = [];
+    const dayNames = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+    for (let i = 6; i >= 0; i--) {
+        let d = new Date();
+        d.setDate(d.getDate() - i);
+        let dateStr = getLocalDateString(d);
+        let dayLabel = dayNames[d.getDay()];
+        let isToday = i === 0;
+        days.push({ dateStr, dayLabel, isToday });
+    }
+    return days;
+}
+
+function calculateStreak(history) {
+    let streak = 0;
+    for (let i = 0; i < 30; i++) {
+        let d = new Date();
+        d.setDate(d.getDate() - i);
+        let dateStr = getLocalDateString(d);
+        if (history[dateStr] === 'green') {
+            streak++;
+        } else if (i > 0) {
+            break;
+        }
+    }
+    return streak;
+}
+
+function calculateOverall(history) {
+    let total = 0;
+    let completed = 0;
+    for (let i = 0; i < 30; i++) {
+        let d = new Date();
+        d.setDate(d.getDate() - i);
+        let dateStr = getLocalDateString(d);
+        if (history[dateStr]) {
+            total++;
+            if (history[dateStr] === 'green') completed++;
+        }
+    }
+    if (total === 0) return 0;
+    return Math.round((completed / total) * 100);
+}
+
+function renderHabits() {
+    const container = document.getElementById('habitsContainer');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const last7Days = getLast7Days();
+
+    habitsList.forEach((habit, habitIndex) => {
+        let streak = calculateStreak(habit.history);
+        let overall = calculateOverall(habit.history);
+
+        let daysHtml = last7Days.map(day => {
+            let status = habit.history[day.dateStr] || 'none'; // 'green', 'red', 'none'
+            
+            let bgClass = 'bg-gray-200 text-gray-500 dark:bg-gray-700 dark:text-gray-400';
+            if (status === 'green') bgClass = 'bg-lime-500 text-white font-bold';
+            if (status === 'red') bgClass = 'bg-red-500 text-white font-bold';
+
+            return `
+                <div class="flex flex-col items-center">
+                    <button 
+                        onclick="cycleHabitStatus(${habitIndex}, '${day.dateStr}')" 
+                        class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-semibold shadow-sm transition-transform active:scale-90 ${bgClass}">
+                        ${day.dayLabel}
+                    </button>
+                    ${day.isToday ? '<span class="text-[9px] font-bold text-indigo-600 dark:text-indigo-400 mt-0.5">TODAY</span>' : ''}
+                </div>
+            `;
+        }).join('');
+
+        container.innerHTML += `
+            <div class="p-3 bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm space-y-2">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-sm font-bold text-gray-800 dark:text-gray-100">${escapeHTML(habit.name)}</h3>
+                        <p class="text-[11px] text-gray-500 dark:text-gray-400">
+                            Streak: <span class="font-bold text-indigo-600 dark:text-indigo-400">+${streak}</span> | 
+                            Overall: <span class="font-bold">${overall}%</span>
+                        </p>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button onclick="editHabit(${habitIndex})" class="text-xs text-gray-400 hover:text-indigo-600">✏️</button>
+                        <button onclick="deleteHabit(${habitIndex})" class="text-xs text-gray-400 hover:text-red-500">🗑️</button>
+                    </div>
+                </div>
+                <div class="flex justify-between items-center pt-1 border-t border-gray-50 dark:border-gray-700">
+                    ${daysHtml}
+                </div>
+            </div>
+        `;
+    });
+
+    localStorage.setItem('habits_db', JSON.stringify(habitsList));
+}
+
+// status cycle (None -> Green -> Red -> None)
+window.cycleHabitStatus = function(habitIndex, dateStr) {
+    let current = habitsList[habitIndex].history[dateStr] || 'none';
+    if (current === 'none') {
+        habitsList[habitIndex].history[dateStr] = 'green';
+    } else if (current === 'green') {
+        habitsList[habitIndex].history[dateStr] = 'red';
+    } else {
+        delete habitsList[habitIndex].history[dateStr];
+    }
+    renderHabits();
+};
+
+// Add Habit (+ Button)
+document.getElementById('addNewHabitBtn').addEventListener('click', () => {
+    let name = prompt('ಹೊಸ Habit ಹೆಸರು ನಮೂದಿಸಿ:');
+    if (name && name.trim() !== '') {
+        habitsList.push({
+            id: Date.now(),
+            name: name.trim(),
+            history: {}
+        });
+        renderHabits();
+    }
 });
+
+// Edit Habit
+window.editHabit = function(index) {
+    let newName = prompt('Habit ಹೆಸರು ಬದಲಾಯಿಸಿ:', habitsList[index].name);
+    if (newName && newName.trim() !== '') {
+        habitsList[index].name = newName.trim();
+        renderHabits();
+    }
+};
+
+// Delete Habit
+window.deleteHabit = function(index) {
+    if (confirm('ಈ Habit ಅಳಿಸಬೇಕೇ?')) {
+        habitsList.splice(index, 1);
+        renderHabits();
+    }
+};
 
 // ==========================================
 // 6. Dynamic Emergency Cards (With Amount Validation)
