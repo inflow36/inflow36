@@ -60,7 +60,7 @@ export async function deleteEntry(moduleId, entryId) {
   await saveEntries(moduleId, entries);
 }
 
-// 5. Clear feature (App.js ಹುಡುಕುತ್ತಿರುವ ಪ್ರಮುಖ ಫಂಕ್ಷನ್)
+// 5. Clear feature
 export async function clearFeature(moduleId) {
   localStorage.removeItem(STORAGE_KEY_PREFIX + moduleId);
   const docRef = getDashboardDocRef();
@@ -73,7 +73,6 @@ export async function clearFeature(moduleId) {
   }
 }
 
-// Default export structure
 export const store = {
   loadEntries,
   saveEntries,

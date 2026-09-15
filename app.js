@@ -1,9 +1,7 @@
 import { store } from './store.js';
-import { habits } from './habits.js';
-import { runWalk } from './run-walk.js';
-
-// Feature Registry
-const features = [runWalk, habits];
+import { features } from './features/index.js';
+import { habits } from './features/habits.js';
+import { runWalk } from './features/run-walk.js';
 
 const $ = s => document.querySelector(s), app = $('#appMain');
 let activeFeature = null, editingId = null;
