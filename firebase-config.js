@@ -35,7 +35,7 @@ export const authReady = new Promise(resolve => {
 export async function signInWithGoogle() {
   if (!auth) throw new Error('Firebase Authentication is unavailable');
   const provider = new firebase.auth.GoogleAuthProvider();
-  return auth.signInWithPopup(provider);
+  return auth.signInWithRedirect(provider);
 }
 
 export async function signOutUser() {

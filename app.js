@@ -270,6 +270,12 @@ async function launchAfterLogin() {
 }
 
 if (auth) {
+  // Complete a Google redirect login and show a useful error if Firebase rejects it.
+  auth.getRedirectResult().catch(e => {
+    console.error('Google redirect login failed:', e);
+    const error = $('#loginError');
+    if (error) error.textContent = `Login failed: ${e.code || e.message || 'Please try again.'}`;
+  });
   auth.onAuthStateChanged(user => {
     if (user) renderHome();
     else launchAfterLogin();
