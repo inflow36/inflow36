@@ -3,7 +3,20 @@ import { getDashboardDocRef } from './firebase-config.js';
 const STORAGE_KEY_PREFIX = 'inflow36_data_';
 
 export const store = {
-  // Load module entries (First from Firestore, fallback to LocalStorage)
+  // Clear feature helper (App.js ಗಾಗಿ)
+  async clearFeature(moduleId) {
+    localStorage.removeItem(STORAGE_KEY_PREFIX + moduleId);
+    const docRef = getDashboardDocRef();
+    if (docRef) {
+      try {
+        await docRef.collection('modules').doc(moduleId).delete();
+      } catch (err) {
+        console.error(`Clear error for ${moduleId}:`, err);
+      }
+    }
+  },
+
+  // Load module entries
   async loadEntries(moduleId) {
     const docRef = getDashboardDocRef();
     if (docRef) {
@@ -11,7 +24,6 @@ export const store = {
         const doc = await docRef.collection('modules').doc(moduleId).get();
         if (doc.exists && doc.data().entries) {
           const cloudData = doc.data().entries;
-          // Sync to LocalStorage for offline support
           localStorage.setItem(STORAGE_KEY_PREFIX + moduleId, JSON.stringify(cloudData));
           return cloudData;
         }
@@ -20,17 +32,14 @@ export const store = {
       }
     }
 
-    // LocalStorage Fallback
     const localData = localStorage.getItem(STORAGE_KEY_PREFIX + moduleId);
     return localData ? JSON.parse(localData) : [];
   },
 
-  // Save module entries (Saves to both Firestore & LocalStorage)
+  // Save module entries
   async saveEntries(moduleId, entries) {
-    // 1. Save to LocalStorage immediately
     localStorage.setItem(STORAGE_KEY_PREFIX + moduleId, JSON.stringify(entries));
 
-    // 2. Sync to Firebase Cloud
     const docRef = getDashboardDocRef();
     if (docRef) {
       try {
@@ -65,3 +74,6 @@ export const store = {
     await this.saveEntries(moduleId, entries);
   }
 };
+
+// Named export for clearFeature compatibility
+export const clearFeature = (moduleId) => store.clearFeature(moduleId);
