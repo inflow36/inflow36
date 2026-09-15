@@ -1,2 +1,1 @@
-/* Liabilities feature notes and extension point. Core runtime is in ../script.js. */
-export const liabilitiesFeature = { name: 'Liabilities', supportsCreate: true, supportsEdit: true, supportsDelete: true };
+export const liabilities={id:'liabilities',label:'Liability',icon:'📌',group:'Money',fields:[{key:'name',label:'ಹೆಸರು / Name',placeholder:'Loan'},{key:'amount',label:'Amount',type:'number',step:'0.01'}]};

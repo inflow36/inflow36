@@ -1,2 +1,1 @@
-/* Saving Bank feature notes and extension point. Core runtime is in ../script.js. */
-export const savingBankFeature = { accounts: ['Federal Bank','Karnataka Bank','Union Bank','Botim Bank','ADCB Bank','Wallet','Pot'] };
+export const savingBank={id:'saving-bank',label:'Saving Bank',icon:'🏦',group:'Money',fields:[{key:'name',label:'Bank name',placeholder:'Federal Bank'},{key:'amount',label:'Balance',type:'number',step:'0.01'}]};

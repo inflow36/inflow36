@@ -1,0 +1,1 @@
+export const planning={id:'planning',label:'Planning',icon:'📅',group:'Future',fields:[{key:'title',label:'Plan',placeholder:'Wedding plan'},{key:'amount',label:'Budget',type:'number',step:'0.01'},{key:'date',label:'Target date',type:'date',required:false}]};

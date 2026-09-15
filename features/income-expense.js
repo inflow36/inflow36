@@ -1,0 +1,1 @@
+export const incomeExpense={id:'income-expense',label:'Income/Expense',icon:'💰',group:'Money',fields:[{key:'title',label:'Description',placeholder:'Salary / Food'},{key:'amount',label:'Amount',type:'number',step:'0.01'},{key:'date',label:'Date',type:'date'}]};

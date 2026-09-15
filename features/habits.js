@@ -1,2 +1,1 @@
-/* Habits feature notes and extension point. Core runtime is in ../script.js. */
-export const habitsFeature = { name: 'Habits', supportsCreate: true, supportsMarkDone: true };
+export const habits={id:'habits',label:'Habit Tracker',icon:'✓',group:'Daily routine',fields:[{key:'title',label:'Habit name',placeholder:'Drink water'},{key:'date',label:'Date',type:'date'}]};

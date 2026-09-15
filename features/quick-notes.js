@@ -1,2 +1,1 @@
-/* Quick Notes feature notes and extension point. Core runtime is in ../script.js. */
-export const quickNotesFeature = { name: 'Quick Notes', titleLines: 2, supportsEdit: true, supportsDelete: true };
+export const quickNotes={id:'quick-notes',label:'Quick Note',icon:'📝',group:'Notes',fields:[{key:'title',label:'Title',placeholder:'Note title'},{key:'text',label:'Note',placeholder:'Write your note'}]};

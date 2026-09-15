@@ -1,0 +1,1 @@
+export const diary={id:'diary',label:'Diary',icon:'📔',group:'Private',fields:[{key:'title',label:'Title',placeholder:'Today...'},{key:'text',label:'Diary entry',placeholder:'Write your thoughts'},{key:'date',label:'Date',type:'date'}]};

@@ -1,0 +1,1 @@
+export const health={id:'health',label:'Health',icon:'❤️',group:'Wellness',fields:[{key:'title',label:'Health entry',placeholder:'Sleep / weight / medicine'},{key:'text',label:'Details',required:false},{key:'date',label:'Date',type:'date'}]};

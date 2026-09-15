@@ -1,0 +1,1 @@
+export const graphicZone={id:'graphic-zone',label:'Graphic Zone',icon:'🎨',group:'Creative',fields:[{key:'title',label:'Project name',placeholder:'Poster design'},{key:'text',label:'Details',required:false}]};

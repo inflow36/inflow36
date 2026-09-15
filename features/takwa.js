@@ -1,0 +1,1 @@
+export const takwa={id:'takwa',label:'ತಕ್ವಾ',icon:'☪️',group:'Spiritual',fields:[{key:'title',label:'ತಕ್ವಾ entry',placeholder:'Prayer / Quran / Dhikr'},{key:'text',label:'ಸೂಚನೆ',required:false},{key:'date',label:'Date',type:'date'}]};
