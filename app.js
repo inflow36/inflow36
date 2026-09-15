@@ -116,9 +116,11 @@ function showForm(f, item = null) {
   $('#entryForm').innerHTML = f.fields.map(x => `
     <label>
       ${x.label}
-      <input ${x.required === false ? '' : 'required'} name="${x.key}" type="${x.type || 'text'}" value="${esc(item?.[x.key] ?? x.value ?? '')}" placeholder="${x.placeholder || ''}" ${x.step ? `step="${x.step}"` : ''}>
+      ${x.type === 'textarea'
+        ? `<textarea ${x.required === false ? '' : 'required'} name="${x.key}" placeholder="${x.placeholder || ''}">${esc(item?.[x.key] ?? '')}</textarea>`
+        : `<input ${x.required === false ? '' : 'required'} name="${x.key}" type="${x.type || 'text'}" value="${esc(item?.[x.key] ?? x.value ?? '')}" placeholder="${x.placeholder || ''}" ${x.step ? `step="${x.step}"` : ''}>`}
     </label>
-  `).join('') + '<button class="primary" type="submit">Save</button>';
+  `).join('') + `<button class="primary" type="submit">${f.id === 'quick-notes' ? 'Done' : 'Save'}</button>`;
   $('#entryModal').classList.add('open');
 }
 
@@ -207,6 +209,21 @@ document.addEventListener('click', async e => {
 $('#entryForm').addEventListener('submit', e => {
   e.preventDefault();
   handleSave(e.currentTarget);
+});
+
+// Quick Note: save a draft while the user types, then update the same note.
+$('#entryForm').addEventListener('input', e => {
+  if (activeFeature?.id !== 'quick-notes' || e.target.name !== 'text') return;
+  clearTimeout(window.noteAutosaveTimer);
+  window.noteAutosaveTimer = setTimeout(async () => {
+    const text = e.target.value.trim();
+    if (!text) return;
+    const entries = await dataFor(activeFeature);
+    if (!editingId) editingId = uid();
+    const draft = { id: editingId, text, date: date(), createdAt: new Date().toISOString() };
+    await saveEntries(activeFeature, entries.some(entry => entry.id === editingId) ? entries.map(entry => entry.id === editingId ? { ...entry, ...draft } : entry) : [draft, ...entries]);
+    toast('Note auto-saved');
+  }, 500);
 });
 
 // Theme Setup

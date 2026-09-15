@@ -4,7 +4,8 @@ export const habits = {
   icon: '✓',
   group: 'Daily routine',
   fields: [
-    { key: 'title', label: 'Habit Name', placeholder: 'Eg: nellikai 🫐', required: true }
+    { key: 'title', label: 'Habit Name', placeholder: 'Eg: nellikai', required: true },
+    { key: 'emoji', label: 'Icon / Emoji', placeholder: 'Eg: 🍋', required: false }
   ],
   render(entries, helpers) {
     const dayLabels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
@@ -94,13 +95,15 @@ export const habits = {
             </div>`;
         }
 
-        const sampleEntryId = Object.values(habitMap[title])[0]?.id || '';
+        const sampleEntry = Object.values(habitMap[title])[0] || {};
+        const sampleEntryId = sampleEntry.id || '';
+        const emoji = sampleEntry.emoji || '✓';
 
         habitsListHtml += `
           <div style="background: #ffffff; padding: 14px 12px; border-bottom: 1px solid #eeeeee;">
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
               <div>
-                <h4 style="font-size: 15px; font-weight: 800; color: #1a237e; margin: 0 0 2px 0;">${title}</h4>
+                <h4 style="font-size: 15px; font-weight: 800; color: #1a237e; margin: 0 0 2px 0;">${emoji} ${title}</h4>
                 <span style="font-size: 11px; color: #555; font-weight: 600;">Streak: +${stats.streak} | Overall: ${stats.overall}%</span>
               </div>
               <div style="display: flex; gap: 8px;">
