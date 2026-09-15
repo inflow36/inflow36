@@ -32,7 +32,7 @@ export const habits = {
         const d = new Date(now);
         d.setDate(now.getDate() - i);
         const dStr = d.toISOString().slice(0, 10);
-        if (datesObj[dStr] && datesObj[dStr].status) {
+        if (datesObj[dStr] && datesObj[dStr].status === 'done') {
           completedCount++;
           if (i === streak) streak++;
         }
@@ -86,7 +86,8 @@ export const habits = {
                       data-title="${helpers.esc(title)}" 
                       data-date="${dStr}" 
                       data-entryid="${existingId}"
-                      style="width: 38px; height: 38px; border-radius: 50%; background: ${bgColor}; color: ${textColor}; border: none; font-size: 12px; font-weight: 700; margin: 0 auto; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center;">
+                      data-status="${entry ? entry.status : 'none'}"
+                      style="width: 38px; height: 38px; border-radius: 50%; background: ${bgColor}; color: ${textColor}; border: none; font-size: 12px; font-weight: 700; margin: 0 auto; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; outline: none;">
                 ${dayText}
               </button>
               ${isToday ? '<span style="font-size: 9px; color: #888; font-weight: 700; display: block; margin-top: 2px;">TODAY</span>' : ''}
@@ -119,7 +120,7 @@ export const habits = {
     return `
       <!-- Container Box -->
       <div style="background: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
-        <div style="padding: 12px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center; background: #fafafa;">
+        <div style="padding: 12px 16px; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align- items: center; background: #fafafa;">
           <span style="font-size: 12px; font-weight: 800; color: #666; letter-spacing: 0.5px;">ALL HABITS</span>
         </div>
         ${habitsListHtml}
