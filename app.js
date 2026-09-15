@@ -1,4 +1,5 @@
 import { store } from './store.js';
+import { auth, authReady, signInWithGoogle, signOutUser } from './firebase-config.js';
 import { features } from './features/index.js';
 import { habits } from './features/habits.js';
 import { runWalk } from './features/run-walk.js';
@@ -7,7 +8,7 @@ const $ = s => document.querySelector(s), app = $('#appMain');
 let activeFeature = null, editingId = null;
 
 const esc = v => String(v ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
-const date = () => new Date().toISOString().slice(0, 10);
+const date = () => { const d = new Date(); const pad = n => String(n).padStart(2, '0'); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; };
 const money = n => '₹' + Number(n || 0).toLocaleString('en-IN',{maximumFractionDigits:2});
 const uid = () => crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random()}`;
 
@@ -26,7 +27,7 @@ function toast(message) {
 }
 
 async function saveEntries(f, entries) {
-  await store.saveEntries(f.id, entries);
+  return await store.saveEntries(f.id, entries);
 }
 
 // Render Dashboard (Home)
@@ -152,10 +153,10 @@ async function handleSave(form) {
   } else {
     updatedEntries = editingId ? entries.map(x => x.id === editingId ? { ...x, ...entry } : x) : [entry, ...entries];
   }
-  await saveEntries(activeFeature, updatedEntries);
+  const result = await saveEntries(activeFeature, updatedEntries);
   closeForm();
   await renderFeature(activeFeature);
-  toast('Firebase sync ಆಯಿತು');
+  toast(result?.ok ? 'Firebase sync ಆಯಿತು' : 'Local save ಆಯಿತು; Firebase sync ವಿಫಲವಾಗಿದೆ');
 }
 
 // Global Click Handlers
@@ -251,5 +252,28 @@ if (localStorage.getItem('life-theme') === 'dark') {
   document.body.classList.add('dark');
 }
 
-// Initial App Launch
-renderHome();
+// Authentication gate: the app stays hidden until Google login succeeds.
+async function launchAfterLogin() {
+  const user = await authReady;
+  if (!user) {
+    app.innerHTML = `<section class="login-screen"><h2>My Life Dashboard</h2><p>ನಿಮ್ಮ dashboard ತೆರೆಯಲು Google account ಮೂಲಕ login ಮಾಡಿ.</p><button id="googleLogin" class="primary">Continue with Google</button><small id="loginError"></small></section>`;
+    $('#googleLogin').addEventListener('click', async () => {
+      const button = $('#googleLogin');
+      const error = $('#loginError');
+      button.disabled = true; button.textContent = 'Signing in…'; error.textContent = '';
+      try { await signInWithGoogle(); }
+      catch (e) { error.textContent = 'Login failed. Please try again.'; button.disabled = false; button.textContent = 'Continue with Google'; console.error(e); }
+    });
+    return;
+  }
+  renderHome();
+}
+
+if (auth) {
+  auth.onAuthStateChanged(user => {
+    if (user) renderHome();
+    else launchAfterLogin();
+  });
+} else {
+  launchAfterLogin();
+}

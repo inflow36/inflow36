@@ -1,4 +1,4 @@
-// Firebase configuration
+// Firebase configuration and shared authentication.
 export const firebaseConfig = {
   apiKey: "AIzaSyBu2ncBIQHklNZUpQcnMj-_2lLtlTvGm8Y",
   authDomain: "inflow36-2160c.firebaseapp.com",
@@ -9,20 +9,41 @@ export const firebaseConfig = {
   measurementId: "G-Y5CEWYXRTG"
 };
 
-// Global Initialization
-if (typeof firebase !== 'undefined' && !firebase.apps.length) {
+export const SYNC_USER_ID = "main_user_dashboard";
+
+const firebaseAvailable = typeof firebase !== 'undefined';
+if (!firebaseAvailable) {
+  console.warn('Firebase SDK is not loaded. The app will use LocalStorage only.');
+}
+
+if (firebaseAvailable && !firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-export const db = (typeof firebase !== 'undefined' && firebase.apps.length) ? firebase.firestore() : null;
+export const db = firebaseAvailable && firebase.apps.length ? firebase.firestore() : null;
+export const auth = firebaseAvailable && firebase.apps.length ? firebase.auth() : null;
 
-// Static User ID to sync all devices (Desktop & Mobile)
-export const SYNC_USER_ID = "main_user_dashboard";
+// Do not sign in anonymously. The dashboard must require Google login.
+export const authReady = new Promise(resolve => {
+  if (!auth) return resolve(null);
+  const unsubscribe = auth.onAuthStateChanged(user => {
+    unsubscribe();
+    resolve(user || null);
+  });
+});
 
-// Helper function to get single document reference
-export function getDashboardDocRef() {
-  if (db) {
-    return db.collection('lifeDashboards').doc(SYNC_USER_ID);
-  }
-  return null;
+export async function signInWithGoogle() {
+  if (!auth) throw new Error('Firebase Authentication is unavailable');
+  const provider = new firebase.auth.GoogleAuthProvider();
+  return auth.signInWithPopup(provider);
+}
+
+export async function signOutUser() {
+  if (auth) await auth.signOut();
+}
+
+export async function getDashboardDocRef() {
+  const user = await authReady;
+  if (!db || !user) return null;
+  return db.collection('lifeDashboards').doc(SYNC_USER_ID);
 }

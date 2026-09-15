@@ -1,82 +1,76 @@
-import { getDashboardDocRef } from './firebase-config.js';
+import { getDashboardDocRef, authReady } from './firebase-config.js';
 
 const STORAGE_KEY_PREFIX = 'inflow36_data_';
 
-// 1. Load module entries
+function localKey(moduleId) { return STORAGE_KEY_PREFIX + moduleId; }
+function readLocal(moduleId) {
+  try { return JSON.parse(localStorage.getItem(localKey(moduleId)) || '[]'); }
+  catch { return []; }
+}
+function writeLocal(moduleId, entries) {
+  localStorage.setItem(localKey(moduleId), JSON.stringify(entries));
+}
+
 export async function loadEntries(moduleId) {
-  const docRef = getDashboardDocRef();
-  if (docRef) {
-    try {
-      const doc = await docRef.collection('modules').doc(moduleId).get();
-      if (doc.exists && doc.data().entries) {
-        const cloudData = doc.data().entries;
-        localStorage.setItem(STORAGE_KEY_PREFIX + moduleId, JSON.stringify(cloudData));
-        return cloudData;
-      }
-    } catch (err) {
-      console.warn(`Firestore load failed for ${moduleId}, using LocalStorage:`, err);
+  const localData = readLocal(moduleId);
+  try {
+    await authReady;
+    const dashboardRef = await getDashboardDocRef();
+    if (!dashboardRef) return localData;
+    const snapshot = await dashboardRef.collection('modules').doc(moduleId).get();
+    if (snapshot.exists && Array.isArray(snapshot.data().entries)) {
+      const cloudData = snapshot.data().entries;
+      writeLocal(moduleId, cloudData);
+      return cloudData;
     }
+  } catch (error) {
+    console.error(`Firestore load failed for ${moduleId}:`, error);
   }
-
-  const localData = localStorage.getItem(STORAGE_KEY_PREFIX + moduleId);
-  return localData ? JSON.parse(localData) : [];
+  return localData;
 }
 
-// 2. Save module entries
 export async function saveEntries(moduleId, entries) {
-  localStorage.setItem(STORAGE_KEY_PREFIX + moduleId, JSON.stringify(entries));
-
-  const docRef = getDashboardDocRef();
-  if (docRef) {
-    try {
-      await docRef.collection('modules').doc(moduleId).set({
-        entries: entries,
-        updatedAt: new Date().toISOString()
-      });
-      console.log(`Synced ${moduleId} to Firebase successfully.`);
-    } catch (err) {
-      console.error(`Firebase Sync Error for ${moduleId}:`, err);
-    }
+  writeLocal(moduleId, entries);
+  try {
+    await authReady;
+    const dashboardRef = await getDashboardDocRef();
+    if (!dashboardRef) throw new Error('Firebase authentication/database is unavailable');
+    await dashboardRef.collection('modules').doc(moduleId).set({
+      entries,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+    console.log(`Synced ${moduleId} to Cloud Firestore successfully.`);
+    return { ok: true };
+  } catch (error) {
+    console.error(`Firestore sync failed for ${moduleId}:`, error);
+    return { ok: false, error };
   }
 }
 
-// 3. Add single entry
 export async function addEntry(moduleId, entryData) {
   const entries = await loadEntries(moduleId);
-  const newEntry = {
-    id: 'entry_' + Date.now(),
-    createdAt: new Date().toISOString(),
-    ...entryData
-  };
+  const newEntry = { id: 'entry_' + Date.now(), createdAt: new Date().toISOString(), ...entryData };
   entries.unshift(newEntry);
   await saveEntries(moduleId, entries);
   return newEntry;
 }
 
-// 4. Delete entry
 export async function deleteEntry(moduleId, entryId) {
-  let entries = await loadEntries(moduleId);
-  entries = entries.filter(e => e.id !== entryId);
-  await saveEntries(moduleId, entries);
+  const entries = (await loadEntries(moduleId)).filter(entry => entry.id !== entryId);
+  return saveEntries(moduleId, entries);
 }
 
-// 5. Clear feature
 export async function clearFeature(moduleId) {
-  localStorage.removeItem(STORAGE_KEY_PREFIX + moduleId);
-  const docRef = getDashboardDocRef();
-  if (docRef) {
-    try {
-      await docRef.collection('modules').doc(moduleId).delete();
-    } catch (err) {
-      console.error(`Clear error for ${moduleId}:`, err);
-    }
+  localStorage.removeItem(localKey(moduleId));
+  try {
+    await authReady;
+    const dashboardRef = await getDashboardDocRef();
+    if (dashboardRef) await dashboardRef.collection('modules').doc(moduleId).delete();
+    return { ok: true };
+  } catch (error) {
+    console.error(`Clear error for ${moduleId}:`, error);
+    return { ok: false, error };
   }
 }
 
-export const store = {
-  loadEntries,
-  saveEntries,
-  addEntry,
-  deleteEntry,
-  clearFeature
-};
+export const store = { loadEntries, saveEntries, addEntry, deleteEntry, clearFeature };
