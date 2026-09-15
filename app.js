@@ -138,7 +138,20 @@ async function handleSave(form) {
     createdAt: new Date().toISOString()
   };
 
-  const updatedEntries = editingId ? entries.map(x => x.id === editingId ? { ...x, ...entry } : x) : [entry, ...entries];
+  let updatedEntries;
+  if (activeFeature?.id === 'run-walk') {
+    // Run/Walk allows exactly one entry per calendar day.
+    const sameDay = entries.find(x => x.date === entry.date && x.id !== editingId);
+    if (sameDay) {
+      updatedEntries = entries.map(x => x.id === sameDay.id ? { ...x, ...entry, id: sameDay.id } : x);
+    } else if (editingId) {
+      updatedEntries = entries.map(x => x.id === editingId ? { ...x, ...entry } : x);
+    } else {
+      updatedEntries = [entry, ...entries];
+    }
+  } else {
+    updatedEntries = editingId ? entries.map(x => x.id === editingId ? { ...x, ...entry } : x) : [entry, ...entries];
+  }
   await saveEntries(activeFeature, updatedEntries);
   closeForm();
   await renderFeature(activeFeature);

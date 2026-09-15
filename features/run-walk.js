@@ -8,7 +8,7 @@ export const runWalk = {
     { key: 'date', label: 'Date', type: 'date' }
   ],
   render(entries, helpers) {
-    const todayStr = helpers.date();
+    const todayStr = new Date().toLocaleDateString('en-CA');
     const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
     // 1. Today's Distance
@@ -23,7 +23,7 @@ export const runWalk = {
       for (let i = 0; i < days; i++) {
         const d = new Date(now);
         d.setDate(now.getDate() - i);
-        const dStr = d.toISOString().slice(0, 10);
+        const dStr = d.toLocaleDateString('en-CA');
         total += entries
           .filter(e => e.date === dStr)
           .reduce((sum, e) => sum + Number(e.km || 0), 0);
@@ -46,7 +46,7 @@ export const runWalk = {
     for (let i = 0; i < 7; i++) {
       const d = new Date(now);
       d.setDate(now.getDate() - i);
-      const dStr = d.toISOString().slice(0, 10);
+      const dStr = d.toLocaleDateString('en-CA');
       const formattedDate = `${dStr.slice(5, 7)}-${dStr.slice(8, 10)}`;
       const dayLabel = i === 0 ? 'ಇವತ್ತು' : `${dayNames[d.getDay()]} (${formattedDate})`;
       
