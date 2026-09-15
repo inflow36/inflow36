@@ -30,6 +30,16 @@ async function saveEntries(f, entries) {
   return await store.saveEntries(f.id, entries);
 }
 
+function authErrorMessage(error) {
+  const messages = {
+    'auth/unauthorized-domain': 'ಈ website domain ಅನ್ನು Firebase Authorized domains ನಲ್ಲಿ ಸೇರಿಸಿ.',
+    'auth/operation-not-allowed': 'Firebase Console ನಲ್ಲಿ Google sign-in enable ಮಾಡಿ.',
+    'auth/popup-blocked': 'Browser popup block ಮಾಡಿದೆ. ಮತ್ತೊಮ್ಮೆ ಪ್ರಯತ್ನಿಸಿ.',
+    'auth/network-request-failed': 'Internet connection ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.'
+  };
+  return messages[error?.code] || 'Login ಆಗಲಿಲ್ಲ. Firebase settings ಪರಿಶೀಲಿಸಿ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.';
+}
+
 // Render Dashboard (Home)
 async function renderHome() {
   activeFeature = null;
@@ -262,12 +272,20 @@ async function launchAfterLogin() {
       const error = $('#loginError');
       button.disabled = true; button.textContent = 'Signing in…'; error.textContent = '';
       try { await signInWithGoogle(); }
-      catch (e) { error.textContent = 'Login failed. Please try again.'; button.disabled = false; button.textContent = 'Continue with Google'; console.error(e); }
+      catch (e) { error.textContent = authErrorMessage(e); button.disabled = false; button.textContent = 'Continue with Google'; console.error(e); }
     });
     return;
   }
   renderHome();
 }
+
+store.subscribe(async ({ moduleId, source }) => {
+  // Refresh only the currently visible page when another device changes its data.
+  if (source === 'remote-sync' && activeFeature?.id === moduleId && !$('#entryModal').classList.contains('open')) {
+    await renderFeature(activeFeature);
+    toast('ಇನ್ನೊಂದು device ನಿಂದ data sync ಆಯಿತು');
+  }
+});
 
 if (auth) {
   // Complete a Google redirect login and show a useful error if Firebase rejects it.
@@ -277,7 +295,12 @@ if (auth) {
     if (error) error.textContent = `Login failed: ${e.code || e.message || 'Please try again.'}`;
   });
   auth.onAuthStateChanged(user => {
-    if (user) renderHome();
+    if (user) {
+      const moduleIds = features.map(feature => feature.id);
+      store.startRealtimeSync(moduleIds);
+      store.backupLocalEntries(moduleIds).catch(error => console.error('Initial cloud backup failed:', error));
+      renderHome();
+    }
     else launchAfterLogin();
   });
 } else {

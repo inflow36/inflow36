@@ -9,8 +9,6 @@ export const firebaseConfig = {
   measurementId: "G-Y5CEWYXRTG"
 };
 
-export const SYNC_USER_ID = "main_user_dashboard";
-
 const firebaseAvailable = typeof firebase !== 'undefined';
 if (!firebaseAvailable) {
   console.warn('Firebase SDK is not loaded. The app will use LocalStorage only.');
@@ -35,6 +33,8 @@ export const authReady = new Promise(resolve => {
 export async function signInWithGoogle() {
   if (!auth) throw new Error('Firebase Authentication is unavailable');
   const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  // Redirect keeps the sign-in flow reliable on mobile browsers and in installed PWAs.
   return auth.signInWithRedirect(provider);
 }
 
@@ -45,5 +45,6 @@ export async function signOutUser() {
 export async function getDashboardDocRef() {
   const user = await authReady;
   if (!db || !user) return null;
-  return db.collection('lifeDashboards').doc(SYNC_USER_ID);
+  // Each Google account owns only its own dashboard document.
+  return db.collection('lifeDashboards').doc(user.uid);
 }
