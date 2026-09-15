@@ -8,25 +8,48 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+Kannada:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="navigation.css">
+  <link rel="stylesheet" href="style.css?v=2">
+  <link rel="stylesheet" href="navigation.css?v=2">
 </head>
 <body>
   <div class="app-shell">
-    <header class="topbar"><div><div class="eyebrow">PERSONAL SPACE</div><h1>inflow2036</h1></div><button class="icon-btn" id="themeToggle" aria-label="Theme">☾</button></header>
+    <header class="topbar">
+      <div>
+        <div class="eyebrow">PERSONAL SPACE</div>
+        <h1>inflow2036</h1>
+      </div>
+      <button class="icon-btn" id="themeToggle" aria-label="Theme">☾</button>
+    </header>
+
     <main id="appMain"></main>
-    <nav class="bottom-nav"><button data-home>⌂<span>Home</span></button><button data-open="saving-bank">₹<span>Money</span></button><button data-open="run-walk">◉<span>Activity</span></button><button data-open="diary">▣<span>Diary</span></button><button data-open="inflow36">☰<span>More</span></button></nav>
+
+    <nav class="bottom-nav">
+      <button data-home>⌂<span>Home</span></button>
+      <button data-open="saving-bank">₹<span>Money</span></button>
+      <button data-open="run-walk">◉<span>Activity</span></button>
+      <button data-open="diary">▣<span>Diary</span></button>
+      <button data-open="inflow36">☰<span>More</span></button>
+    </nav>
   </div>
-  <div class="modal" id="entryModal" aria-hidden="true"><div class="modal-box"><button class="close" data-close aria-label="Close">×</button><h2 id="modalTitle">ಹೊಸ ಎಂಟ್ರಿ</h2><form id="entryForm"></form></div></div>
+
+  <div class="modal" id="entryModal" aria-hidden="true">
+    <div class="modal-box">
+      <button class="close" data-close aria-label="Close">×</button>
+      <h2 id="modalTitle">ಹೊಸ ಎಂಟ್ರಿ</h2>
+      <form id="entryForm"></form>
+    </div>
+  </div>
+
   <div class="toast" id="toast"></div>
 
-<!-- Firebase Compat SDKs -->
+  <!-- Firebase Compat SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
   
-  <!-- Firebase Config (type="module" ಸೇರಿಸಿ) -->
-  <script type="module" src="firebase-config.js"></script>
-
-  <!-- App Entry Point -->
-  <script type="module" src="app.js"></script>
+  <!-- Config and App Entry Point with Cache Busters -->
+  <script type="module" src="firebase-config.js?v=2"></script>
+  <script type="module" src="store.js?v=2"></script>
+  <script type="module" src="app.js?v=2"></script>
+</body>
+</html>
