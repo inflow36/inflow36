@@ -15,3 +15,14 @@ if (typeof firebase !== 'undefined' && !firebase.apps.length) {
 }
 
 export const db = (typeof firebase !== 'undefined' && firebase.apps.length) ? firebase.firestore() : null;
+
+// Static User ID to sync all devices (Desktop & Mobile)
+export const SYNC_USER_ID = "main_user_dashboard";
+
+// Helper function to get single document reference
+export function getDashboardDocRef() {
+  if (db) {
+    return db.collection('lifeDashboards').doc(SYNC_USER_ID);
+  }
+  return null;
+}
