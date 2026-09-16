@@ -27,3 +27,12 @@
 ## Firestore rules
 
 The rules remain user-scoped: a signed-in user can read/write only their own `lifeDashboards/{uid}` document and its `modules` subcollection.
+
+
+## Follow-up fix — 16 Sep 2026
+
+The previous package used the Firestore root collection `lifeDashboards`. The supplied Firebase Console screenshot shows that the deployed Firestore Rules are configured for `dashboards/{userId}/modules/{moduleId}`. This mismatch causes Firestore writes to fail with `permission-denied` even though localStorage saves successfully.
+
+The website code has now been changed back to the Firebase Console's actual `dashboards/{uid}/modules/{moduleId}` path so it matches the rules and preserves any existing cloud data stored there.
+
+**Important:** deploy the website files and make sure the Firestore Rules in the Firebase Console are the same as `firestore.rules` in this ZIP.

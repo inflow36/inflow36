@@ -14,7 +14,7 @@ Anonymous authentication is not used by the app. It can remain enabled in the Fi
 
 The app writes to:
 
-`lifeDashboards/{GoogleUserUID}/modules/{moduleId}`
+`dashboards/{GoogleUserUID}/modules/{moduleId}`
 
 Each module document contains:
 
@@ -33,4 +33,4 @@ If data is saved locally but not appearing in Firestore:
 1. Confirm you are signed into the same Google account on both devices.
 2. Open browser DevTools → Console and look for `Firestore sync failed` or `Realtime sync failed`.
 3. Confirm the Firestore Rules match the included `firestore.rules`.
-4. In Firestore → Data, look for `lifeDashboards` → your Google UID → `modules`.
+4. In Firestore → Data, look for `dashboards` → your Google UID → `modules`.

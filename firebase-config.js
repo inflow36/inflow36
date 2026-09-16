@@ -54,5 +54,5 @@ export async function getDashboardDocRef() {
   if (!user) return null;
 
   // Canonical Firestore path. This matches firestore.rules.
-  return db.collection('lifeDashboards').doc(user.uid);
+  return db.collection('dashboards').doc(user.uid);
 }
