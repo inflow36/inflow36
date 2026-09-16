@@ -122,21 +122,25 @@ function defaultList(entries, f) {
 }
 
 function showForm(f, item = null) {
+function showForm(f, item = null) {
   editingId = item?.id || null;
   $('#modalTitle').textContent = `${item ? 'ತಿದ್ದು' : 'ಸೇರಿಸಿ'} · ${f.label}`;
   $('#entryForm').innerHTML = f.fields.map(x => `
     <label>
       ${x.label}
-      ${x.type === 'textarea'
-        ? `<textarea ${x.required === false ? '' : 'required'} name="${x.key}" placeholder="${x.placeholder || ''}">${esc(item?.[x.key] ?? '')}</textarea>`
-        : `<input ${x.required === false ? '' : 'required'} name="${x.key}" type="${x.type || 'text'}" value="${esc(item?.[x.key] ?? x.value ?? '')}" placeholder="${x.placeholder || ''}" ${x.step ? `step="${x.step}"` : ''}>`}
+      <input ${x.required === false ? '' : 'required'} name="${x.key}" type="${x.type || 'text'}" value="${esc(item?.[x.key] ?? x.value ?? '')}" placeholder="${x.placeholder || ''}" ${x.step ? `step="${x.step}"` : ''}>
     </label>
-  `).join('') + `<button class="primary" type="submit">${f.id === 'quick-notes' ? 'Done' : 'Save'}</button>`;
-  $('#entryModal').classList.add('open');
+  `).join('') + '<button class="primary" type="submit">Save</button>';
+  
+  const modal = $('#entryModal');
+  modal.setAttribute('aria-hidden', 'false'); // Warning ಸರಿಪಡಿಸಲು
+  modal.classList.add('open');
 }
 
 function closeForm() {
-  $('#entryModal').classList.remove('open');
+  const modal = $('#entryModal');
+  modal.setAttribute('aria-hidden', 'true');
+  modal.classList.remove('open');
 }
 
 async function handleSave(form) {
