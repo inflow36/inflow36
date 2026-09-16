@@ -2,6 +2,7 @@ import { auth, getDashboardDocRef, authReady } from './firebase-config.js';
 
 const STORAGE_KEY_PREFIX = 'inflow36_data_';
 const PENDING_MODULES_KEY = `${STORAGE_KEY_PREFIX}pending_modules`;
+const UPDATED_AT_PREFIX = `${STORAGE_KEY_PREFIX}updated_at_`;
 const cachedEntries = new Map();
 const subscribers = new Set();
 const syncUnsubscribers = new Map();
@@ -12,13 +13,28 @@ const pendingLocalModules = new Set((() => {
 })());
 
 function localKey(moduleId) { return STORAGE_KEY_PREFIX + moduleId; }
+function updatedAtKey(moduleId) { return UPDATED_AT_PREFIX + moduleId; }
+
 function readLocal(moduleId) {
-  try { return JSON.parse(localStorage.getItem(localKey(moduleId)) || '[]'); }
-  catch { return []; }
+  try {
+    const value = JSON.parse(localStorage.getItem(localKey(moduleId)) || '[]');
+    return Array.isArray(value) ? value : [];
+  } catch { return []; }
 }
+
 function writeLocal(moduleId, entries) {
-  localStorage.setItem(localKey(moduleId), JSON.stringify(entries));
-  cachedEntries.set(moduleId, entries);
+  const safeEntries = Array.isArray(entries) ? entries : [];
+  localStorage.setItem(localKey(moduleId), JSON.stringify(safeEntries));
+  cachedEntries.set(moduleId, safeEntries);
+}
+
+function getLocalUpdatedAt(moduleId) {
+  const value = Number(localStorage.getItem(updatedAtKey(moduleId)) || 0);
+  return Number.isFinite(value) ? value : 0;
+}
+
+function setLocalUpdatedAt(moduleId, value = Date.now()) {
+  localStorage.setItem(updatedAtKey(moduleId), String(value));
 }
 
 function rememberPending(moduleId) {
@@ -35,46 +51,89 @@ function notify(moduleId, entries, source) {
   subscribers.forEach(listener => listener({ moduleId, entries, source }));
 }
 
-function applyEntries(moduleId, entries, source) {
+function applyEntries(moduleId, entries, source, { markLocalChange = false } = {}) {
   writeLocal(moduleId, entries);
+  if (markLocalChange) setLocalUpdatedAt(moduleId);
   notify(moduleId, entries, source);
   return entries;
 }
 
+function cloudMillis(snapshot) {
+  const value = snapshot?.data()?.updatedAt;
+  if (!value) return 0;
+  if (typeof value.toMillis === 'function') return value.toMillis();
+  if (value instanceof Date) return value.getTime();
+  return Number(value) || 0;
+}
+
 export async function loadEntries(moduleId) {
   const localData = cachedEntries.has(moduleId) ? cachedEntries.get(moduleId) : readLocal(moduleId);
+
   try {
     await authReady;
     const dashboardRef = await getDashboardDocRef();
     if (!dashboardRef) return localData;
-    const snapshot = await dashboardRef.collection('modules').doc(moduleId).get();
-    if (snapshot.exists && Array.isArray(snapshot.data().entries)) {
-      const cloudData = snapshot.data().entries;
-      applyEntries(moduleId, cloudData, 'cloud-load');
-      return cloudData;
+
+    const moduleRef = dashboardRef.collection('modules').doc(moduleId);
+    const snapshot = await moduleRef.get();
+
+    if (!snapshot.exists) {
+      // First login on a device: move existing browser data to the user's cloud.
+      if (localData.length) {
+        await writeCloud(moduleRef, moduleId, localData);
+        forgetPending(moduleId);
+      }
+      return localData;
     }
+
+    const cloudData = snapshot.data()?.entries;
+    if (!Array.isArray(cloudData)) return localData;
+
+    // If this browser has an unsynced edit, do not silently replace it with
+    // an older cloud copy. Compare the local edit time with Firestore metadata.
+    if (pendingLocalModules.has(moduleId) && localData.length) {
+      const localTime = getLocalUpdatedAt(moduleId);
+      const remoteTime = cloudMillis(snapshot);
+      if (localTime > remoteTime) {
+        await writeCloud(moduleRef, moduleId, localData);
+        forgetPending(moduleId);
+        return localData;
+      }
+    }
+
+    applyEntries(moduleId, cloudData, 'cloud-load');
+    forgetPending(moduleId);
+    return cloudData;
   } catch (error) {
     console.error(`Firestore load failed for ${moduleId}:`, error);
   }
+
   return localData;
 }
 
+async function writeCloud(moduleRef, moduleId, entries) {
+  if (!auth?.currentUser) throw new Error('Firebase authentication is unavailable');
+  await moduleRef.set({
+    entries: Array.isArray(entries) ? entries : [],
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    updatedBy: auth.currentUser.uid
+  }, { merge: true });
+}
+
 export async function saveEntries(moduleId, entries) {
-  // Save locally first, so an entry is never lost while the device is offline.
-  applyEntries(moduleId, entries, 'local-save');
+  // Local-first: the UI remains usable even if the network is temporarily down.
+  applyEntries(moduleId, entries, 'local-save', { markLocalChange: true });
   rememberPending(moduleId);
 
-  // Preserve save order for rapid auto-saves (for example, Quick Notes typing).
+  // Preserve save order for rapid saves such as Quick Notes typing.
   const previous = saveQueues.get(moduleId) || Promise.resolve();
   const queuedSave = previous.catch(() => undefined).then(async () => {
     await authReady;
     const dashboardRef = await getDashboardDocRef();
-    if (!dashboardRef) throw new Error('Firebase authentication/database is unavailable');
-    await dashboardRef.collection('modules').doc(moduleId).set({
-      entries,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedBy: auth.currentUser.uid
-    }, { merge: true });
+    if (!dashboardRef) throw new Error('Please sign in with Google before syncing');
+
+    await writeCloud(dashboardRef.collection('modules').doc(moduleId), moduleId, entries);
+
     // Do not mark a newer edit as synced when an earlier queued save finishes.
     if (cachedEntries.get(moduleId) === entries) forgetPending(moduleId);
   });
@@ -90,8 +149,6 @@ export async function saveEntries(moduleId, entries) {
   }
 }
 
-// Retry only entries that previously failed to reach Firestore. This avoids
-// overwriting a healthy cloud copy merely because a user logged in again.
 export async function retryPendingWrites() {
   const moduleIds = [...pendingLocalModules];
   await Promise.all(moduleIds.map(moduleId => saveEntries(
@@ -100,7 +157,6 @@ export async function retryPendingWrites() {
   )));
 }
 
-// Firestore sends remote changes here immediately, keeping desktop and mobile in sync.
 export async function startRealtimeSync(moduleIds) {
   await authReady;
   const dashboardRef = await getDashboardDocRef();
@@ -110,10 +166,12 @@ export async function startRealtimeSync(moduleIds) {
   moduleIds.forEach(moduleId => {
     const unsubscribe = dashboardRef.collection('modules').doc(moduleId).onSnapshot(
       snapshot => {
-        if (!snapshot.exists || !Array.isArray(snapshot.data().entries)) return;
-        // Local writes are already reflected in the screen. Remote writes trigger updates here.
+        if (!snapshot.exists || !Array.isArray(snapshot.data()?.entries)) return;
+        // Local writes are already shown immediately. Ignore the pending local
+        // echo and only apply the committed remote version.
         if (snapshot.metadata.hasPendingWrites) return;
         applyEntries(moduleId, snapshot.data().entries, 'remote-sync');
+        forgetPending(moduleId);
       },
       error => console.error(`Realtime sync failed for ${moduleId}:`, error)
     );
@@ -122,8 +180,6 @@ export async function startRealtimeSync(moduleIds) {
   return true;
 }
 
-// Move pre-existing browser-only entries to Firestore once, without replacing
-// a dashboard that already exists in the cloud.
 export async function backupLocalEntries(moduleIds) {
   await authReady;
   const dashboardRef = await getDashboardDocRef();
@@ -132,14 +188,17 @@ export async function backupLocalEntries(moduleIds) {
   await Promise.all(moduleIds.map(async moduleId => {
     const entries = cachedEntries.has(moduleId) ? cachedEntries.get(moduleId) : readLocal(moduleId);
     if (!entries.length) return;
+
     const moduleRef = dashboardRef.collection('modules').doc(moduleId);
     const snapshot = await moduleRef.get();
-    if (!snapshot.exists) {
-      await moduleRef.set({
-        entries,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        updatedBy: auth.currentUser.uid
-      });
+
+    // Migrate local data when the cloud module is missing or still empty.
+    // Never replace an existing non-empty cloud module during login.
+    const cloudEntries = snapshot.exists && Array.isArray(snapshot.data()?.entries)
+      ? snapshot.data().entries : [];
+    if (!snapshot.exists || cloudEntries.length === 0) {
+      await writeCloud(moduleRef, moduleId, entries);
+      forgetPending(moduleId);
     }
   }));
   return true;
@@ -170,7 +229,9 @@ export async function deleteEntry(moduleId, entryId) {
 
 export async function clearFeature(moduleId) {
   localStorage.removeItem(localKey(moduleId));
+  localStorage.removeItem(updatedAtKey(moduleId));
   forgetPending(moduleId);
+  cachedEntries.delete(moduleId);
   try {
     await authReady;
     const dashboardRef = await getDashboardDocRef();

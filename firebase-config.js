@@ -1,42 +1,58 @@
-// firebase-config.js
-
-// Firebase App configuration
-const firebaseConfig = {
-  apiKey: "AIzaSy...", // Firebase Console Project Settings ನಲ್ಲಿರುವ ನಿಜವಾದ apiKey ಹಾಕಿ
+// Firebase configuration and shared authentication.
+// This is the browser-safe Firebase Web App config from the Firebase Console.
+export const firebaseConfig = {
+  apiKey: "AIzaSyBu2ncBIQHklNZUpQcnMj-_2lLtlTvGm8Y",
   authDomain: "inflow36-2160c.firebaseapp.com",
+  databaseURL: "https://inflow36-2160c-default-rtdb.firebaseio.com",
   projectId: "inflow36-2160c",
   storageBucket: "inflow36-2160c.firebasestorage.app",
   messagingSenderId: "135542995416",
-  appId: "1:135542995416:web:..." // Firebase Console ನಲ್ಲಿರುವ ನಿಜವಾದ appId ಹಾಕಿ
+  appId: "1:135542995416:web:c2e4c689793ba767889aad",
+  measurementId: "G-Y5CEWYXRTG"
 };
 
-// Initialize Firebase
-if (!firebase.apps.length) {
+const firebaseAvailable = typeof firebase !== 'undefined';
+
+if (!firebaseAvailable) {
+  console.warn('Firebase SDK is not loaded. The app will use LocalStorage only.');
+}
+
+if (firebaseAvailable && !firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
-const auth = firebase.auth();
-const db = firebase.firestore();
+export const db = firebaseAvailable && firebase.apps.length ? firebase.firestore() : null;
+export const auth = firebaseAvailable && firebase.apps.length ? firebase.auth() : null;
 
-// Anonymous Auto-Login to handle initial auth seamlessly
-auth.onAuthStateChanged(user => {
-  if (!user) {
-    auth.signInAnonymously().catch(err => {
-      console.error("Firebase Anonymous Auth Error:", err);
-    });
-  } else {
-    console.log("Firebase Auth Active. User ID:", user.uid);
-  }
+// Resolve after Firebase has restored the current signed-in session.
+// IMPORTANT: Do not use anonymous sign-in here. The same Google account must
+// identify the dashboard on every device so Firestore can sync correctly.
+export const authReady = new Promise(resolve => {
+  if (!auth) return resolve(null);
+  const unsubscribe = auth.onAuthStateChanged(user => {
+    unsubscribe();
+    resolve(user || null);
+  });
 });
 
-// Helper Function to get Firestore Document Reference
-export function getDashboardDocRef() {
-  const user = auth.currentUser;
-  if (!user) {
-    // Auth ಲೋಡ್ ಆಗುವ ತನಕ 'default_user' ಗೆ ಸಿಂಕ್ ಮಾಡುತ್ತದೆ
-    return db.collection('dashboards').doc('default_user');
-  }
-  return db.collection('dashboards').doc(user.uid);
+export async function signInWithGoogle() {
+  if (!auth) throw new Error('Firebase Authentication is unavailable');
+  const provider = new firebase.auth.GoogleAuthProvider();
+  provider.setCustomParameters({ prompt: 'select_account' });
+  return auth.signInWithRedirect(provider);
 }
 
-export { auth, db };
+export async function signOutUser() {
+  if (auth) await auth.signOut();
+}
+
+export async function getDashboardDocRef() {
+  if (!db || !auth) return null;
+
+  // Prefer the current user. This matters immediately after a redirect login.
+  const user = auth.currentUser || await authReady;
+  if (!user) return null;
+
+  // Canonical Firestore path. This matches firestore.rules.
+  return db.collection('lifeDashboards').doc(user.uid);
+}

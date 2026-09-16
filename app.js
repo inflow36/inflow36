@@ -122,13 +122,14 @@ function defaultList(entries, f) {
 }
 
 function showForm(f, item = null) {
-function showForm(f, item = null) {
   editingId = item?.id || null;
   $('#modalTitle').textContent = `${item ? 'ತಿದ್ದು' : 'ಸೇರಿಸಿ'} · ${f.label}`;
   $('#entryForm').innerHTML = f.fields.map(x => `
     <label>
       ${x.label}
-      <input ${x.required === false ? '' : 'required'} name="${x.key}" type="${x.type || 'text'}" value="${esc(item?.[x.key] ?? x.value ?? '')}" placeholder="${x.placeholder || ''}" ${x.step ? `step="${x.step}"` : ''}>
+      ${x.type === 'textarea'
+        ? `<textarea ${x.required === false ? '' : 'required'} name="${x.key}" placeholder="${x.placeholder || ''}">${esc(item?.[x.key] ?? x.value ?? '')}</textarea>`
+        : `<input ${x.required === false ? '' : 'required'} name="${x.key}" type="${x.type || 'text'}" value="${esc(item?.[x.key] ?? x.value ?? '')}" placeholder="${x.placeholder || ''}" ${x.step ? `step="${x.step}"` : ''}>`}
     </label>
   `).join('') + '<button class="primary" type="submit">Save</button>';
   
@@ -307,10 +308,18 @@ if (location.protocol === 'file:') {
   auth.onAuthStateChanged(user => {
     if (user) {
       const moduleIds = features.map(feature => feature.id);
-      store.startRealtimeSync(moduleIds).catch(error => console.error('Realtime sync startup failed:', error));
-      store.backupLocalEntries(moduleIds).catch(error => console.error('Initial cloud backup failed:', error));
-      store.retryPendingWrites().catch(error => console.error('Pending cloud backup retry failed:', error));
-      renderHome();
+      // Migrate local data before opening realtime listeners. This prevents an
+      // initial empty Firestore snapshot from briefly replacing local entries.
+      (async () => {
+        try {
+          await store.backupLocalEntries(moduleIds);
+          await store.retryPendingWrites();
+          await store.startRealtimeSync(moduleIds);
+        } catch (error) {
+          console.error('Firebase sync startup failed:', error);
+        }
+        await renderHome();
+      })();
     }
     else launchAfterLogin();
   });
