@@ -264,6 +264,10 @@ if (localStorage.getItem('life-theme') === 'dark') {
 
 // Authentication gate: the app stays hidden until Google login succeeds.
 async function launchAfterLogin() {
+  if (location.protocol === 'file:') {
+    app.innerHTML = `<section class="login-screen"><h2>Cloud sync ಆರಂಭವಾಗಿಲ್ಲ</h2><p>ಈ app ಅನ್ನು file ಆಗಿ open ಮಾಡಲಾಗಿದೆ. Google login ಮತ್ತು Firebase backup ಗಾಗಿ website URL ಮೂಲಕ ಮಾತ್ರ open ಮಾಡಿ.</p><a class="primary" href="https://inflow36.github.io/">Open My Life Dashboard</a><small>Local testing ಗೆ: http://localhost:4173</small></section>`;
+    return;
+  }
   const user = await authReady;
   if (!user) {
     app.innerHTML = `<section class="login-screen"><h2>My Life Dashboard</h2><p>ನಿಮ್ಮ dashboard ತೆರೆಯಲು Google account ಮೂಲಕ login ಮಾಡಿ.</p><button id="googleLogin" class="primary">Continue with Google</button><small id="loginError"></small></section>`;
@@ -287,7 +291,9 @@ store.subscribe(async ({ moduleId, source }) => {
   }
 });
 
-if (auth) {
+if (location.protocol === 'file:') {
+  launchAfterLogin();
+} else if (auth) {
   // Complete a Google redirect login and show a useful error if Firebase rejects it.
   auth.getRedirectResult().catch(e => {
     console.error('Google redirect login failed:', e);
@@ -297,8 +303,9 @@ if (auth) {
   auth.onAuthStateChanged(user => {
     if (user) {
       const moduleIds = features.map(feature => feature.id);
-      store.startRealtimeSync(moduleIds);
+      store.startRealtimeSync(moduleIds).catch(error => console.error('Realtime sync startup failed:', error));
       store.backupLocalEntries(moduleIds).catch(error => console.error('Initial cloud backup failed:', error));
+      store.retryPendingWrites().catch(error => console.error('Pending cloud backup retry failed:', error));
       renderHome();
     }
     else launchAfterLogin();

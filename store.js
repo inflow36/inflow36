@@ -1,10 +1,15 @@
 import { auth, getDashboardDocRef, authReady } from './firebase-config.js';
 
 const STORAGE_KEY_PREFIX = 'inflow36_data_';
+const PENDING_MODULES_KEY = `${STORAGE_KEY_PREFIX}pending_modules`;
 const cachedEntries = new Map();
 const subscribers = new Set();
 const syncUnsubscribers = new Map();
 const saveQueues = new Map();
+const pendingLocalModules = new Set((() => {
+  try { return JSON.parse(localStorage.getItem(PENDING_MODULES_KEY) || '[]'); }
+  catch { return []; }
+})());
 
 function localKey(moduleId) { return STORAGE_KEY_PREFIX + moduleId; }
 function readLocal(moduleId) {
@@ -14,6 +19,16 @@ function readLocal(moduleId) {
 function writeLocal(moduleId, entries) {
   localStorage.setItem(localKey(moduleId), JSON.stringify(entries));
   cachedEntries.set(moduleId, entries);
+}
+
+function rememberPending(moduleId) {
+  pendingLocalModules.add(moduleId);
+  localStorage.setItem(PENDING_MODULES_KEY, JSON.stringify([...pendingLocalModules]));
+}
+
+function forgetPending(moduleId) {
+  pendingLocalModules.delete(moduleId);
+  localStorage.setItem(PENDING_MODULES_KEY, JSON.stringify([...pendingLocalModules]));
 }
 
 function notify(moduleId, entries, source) {
@@ -47,6 +62,7 @@ export async function loadEntries(moduleId) {
 export async function saveEntries(moduleId, entries) {
   // Save locally first, so an entry is never lost while the device is offline.
   applyEntries(moduleId, entries, 'local-save');
+  rememberPending(moduleId);
 
   // Preserve save order for rapid auto-saves (for example, Quick Notes typing).
   const previous = saveQueues.get(moduleId) || Promise.resolve();
@@ -59,6 +75,8 @@ export async function saveEntries(moduleId, entries) {
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedBy: auth.currentUser.uid
     }, { merge: true });
+    // Do not mark a newer edit as synced when an earlier queued save finishes.
+    if (cachedEntries.get(moduleId) === entries) forgetPending(moduleId);
   });
   saveQueues.set(moduleId, queuedSave);
 
@@ -70,6 +88,16 @@ export async function saveEntries(moduleId, entries) {
     console.error(`Firestore sync failed for ${moduleId}:`, error);
     return { ok: false, error };
   }
+}
+
+// Retry only entries that previously failed to reach Firestore. This avoids
+// overwriting a healthy cloud copy merely because a user logged in again.
+export async function retryPendingWrites() {
+  const moduleIds = [...pendingLocalModules];
+  await Promise.all(moduleIds.map(moduleId => saveEntries(
+    moduleId,
+    cachedEntries.has(moduleId) ? cachedEntries.get(moduleId) : readLocal(moduleId)
+  )));
 }
 
 // Firestore sends remote changes here immediately, keeping desktop and mobile in sync.
@@ -142,6 +170,7 @@ export async function deleteEntry(moduleId, entryId) {
 
 export async function clearFeature(moduleId) {
   localStorage.removeItem(localKey(moduleId));
+  forgetPending(moduleId);
   try {
     await authReady;
     const dashboardRef = await getDashboardDocRef();
@@ -155,5 +184,9 @@ export async function clearFeature(moduleId) {
 
 export const store = {
   loadEntries, saveEntries, addEntry, deleteEntry, clearFeature,
-  startRealtimeSync, backupLocalEntries, stopRealtimeSync, subscribe
+  startRealtimeSync, backupLocalEntries, retryPendingWrites, stopRealtimeSync, subscribe
 };
+
+window.addEventListener('online', () => {
+  retryPendingWrites().catch(error => console.error('Pending cloud backup retry failed:', error));
+});

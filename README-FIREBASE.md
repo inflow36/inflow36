@@ -11,7 +11,7 @@ Important: Google provider must be enabled before testing the login button. Also
 
 ## Run locally
 
-Do not open `index.html` directly. Run `start-local-server.command`, then open `http://localhost:4173` in Chrome. Firebase Google login does not support a `file:///` website address.
+Do not open `index.html` directly. Run `start-local-server.command`, then open `http://localhost:4173` in Chrome. For mobile and computer sync, open the deployed site at `https://inflow36.github.io/`. Firebase Google login and cloud backup do not work reliably from a `file:///` website address.
 
 ## What now syncs automatically
 

@@ -43,7 +43,9 @@ export async function signOutUser() {
 }
 
 export async function getDashboardDocRef() {
-  const user = await authReady;
+  // During redirect sign-in the first auth event can briefly be `null`.
+  // Always prefer Firebase's current user so a just-completed login can save.
+  const user = auth?.currentUser || await authReady;
   if (!db || !user) return null;
   // Each Google account owns only its own dashboard document.
   return db.collection('lifeDashboards').doc(user.uid);
